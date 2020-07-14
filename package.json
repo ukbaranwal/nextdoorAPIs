@@ -1,0 +1,17 @@
+{
+  "name": "nextdoor",
+  "version": "1.0.0",
+  "description": "Collection of Microservices, used for the system where local business can go online",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Utkarsh Baranwal",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "swagger-ui-express": "^4.1.4",
+    "yamljs": "^0.3.0"
+  }
+}

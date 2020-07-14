@@ -1,0 +1,209 @@
+openapi: 3.0.1
+info:
+  title: Next Door
+  description: 'Collection of Microservices'
+  contact:
+    email: ukbaranwal@gmail.com
+  version: 1.0.0
+servers:
+- url: https://localhost:4000
+- url: http://localhost:4000
+tags:
+- name: Vendor
+  description: APIs for Vendors
+- name: User
+  description: APIs for Users
+- name: Delivery Boys
+  description: APIs for Delivery Boys
+
+paths:
+  /vendor/signup:
+    post:
+      tags:
+      - Vendor
+      summary: Signups a Vendor
+      operationId: signupVendor
+      requestBody:
+        description: Vendor object that needs to be added
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+        required: true
+      responses:
+        200:
+          description: Signup was Successfull
+        400:
+          description: Vendor already Registered
+        401:
+          description: Vendor is Banned for Malicious Activities
+        405:
+          description: Invalid input
+          content: {}
+  /vendor/login:
+    post:
+      tags: 
+        - Vendor
+      summary: Logins a Vendor
+      operationId: loginVendor
+      requestBody:
+        description: Email ID and Password of Vendor
+        content:
+          application/json:
+            schema:
+              required: 
+                - email
+                - password
+              type: object
+              properties: 
+                email:
+                  type: string
+                  example: mystore@gmail.com
+                password:
+                  type: string
+                  example: 123$%mystore
+        required: true
+      responses:
+        200:
+          description: Login was Successfull
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorResponse'
+        400:
+          description: Vendor not Registered
+        401:
+          description: Vendor is Banned for Malicious Activities
+        405:
+          description: Invalid input
+          content: {}
+
+components:
+  schemas:
+    Vendor:
+      required:
+      - vendor_type
+      - image_url
+      - name
+      - email
+      - phone
+      - address
+      - password
+      - opt_for_delivery_boy
+      - local_store
+      - tags
+      - owns_store
+      type: object
+      properties:
+        vendor_type:
+          type: integer
+          example: 1
+        image_url: 
+          type: string
+          example: https://cdn.geekwire.com/wp-content/uploads/2020/02/amzngo1-630x420.jpeg
+        name:
+          type: string
+          example: My Store
+        email:
+          type: string
+          example: mystore@gmail.com
+        phone:
+          type: string
+          example: 1234567890
+        address: 
+          type: string
+          example: B-14/419
+        password:
+          type: string
+          example: 123$%mystore
+        opt_for_delivery_boy:
+          type: boolean
+          example: false
+        local_store:
+          type: boolean
+          example: false
+        owns_store: 
+          type: boolean
+          example: false
+        tags:
+          type: string
+          example: grocery,food,shop
+    VendorResponse:
+      type: object
+      properties:
+        vendor_type:
+          type: integer
+          example: 1
+        image_url: 
+          type: string
+          example: https://cdn.geekwire.com/wp-content/uploads/2020/02/amzngo1-630x420.jpeg
+        name:
+          type: string
+          example: My Store
+        email:
+          type: string
+          example: mystore@gmail.com
+        phone:
+          type: string
+          example: 1234567890
+        address: 
+          type: string
+          example: B-14/419
+        password:
+          type: string
+          example: 123$%mystore
+        opt_for_delivery_boy:
+          type: boolean
+          example: false
+        local_store:
+          type: boolean
+          example: false
+        owns_store: 
+          type: boolean
+          example: false
+        tags:
+          type: string
+          example: grocery,food,shop
+        shop_open:
+          type: boolean
+          example: true
+        no_of_rating:
+          type: integer
+          example: 100
+        rating:
+          type: float
+          example: 4.1
+        verified:
+          type: boolean
+          example: true
+        local_store:
+          type: boolean
+          example: false
+        upi_id:
+          type: string
+          example: mystore@paytm
+        paytm_no:
+          type: string
+          example: 1234567890
+        location_lat:
+          type: string
+          example: "0.342455432"
+        location_long:
+          type: string
+          example: "0.342455432"
+        membership_active:
+          type: boolean
+          example: true
+        payable: 
+          type: float
+          example: 1000.0
+        owns_store: 
+          type: boolean
+          example: true
+        opening_time: 
+          type: string
+          example: 11:00
+        closing_time:
+          type: string
+          example: 8:00
+        
