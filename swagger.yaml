@@ -6,8 +6,8 @@ info:
     email: ukbaranwal@gmail.com
   version: 1.0.0
 servers:
-- url: https://localhost:4000
-- url: http://localhost:4000
+- url: localhost:8080
+- url: localhost:4000
 tags:
 - name: Vendor
   description: APIs for Vendors
@@ -82,52 +82,28 @@ components:
   schemas:
     Vendor:
       required:
-      - vendor_type
-      - image_url
       - name
       - email
       - phone
-      - address
       - password
-      - opt_for_delivery_boy
-      - local_store
-      - tags
-      - owns_store
+      - city
       type: object
       properties:
-        vendor_type:
-          type: integer
-          example: 1
-        image_url: 
-          type: string
-          example: https://cdn.geekwire.com/wp-content/uploads/2020/02/amzngo1-630x420.jpeg
         name:
           type: string
           example: My Store
         email:
           type: string
           example: mystore@gmail.com
+        city: 
+          type: string
+          example: Kalyani
         phone:
           type: string
           example: 1234567890
-        address: 
-          type: string
-          example: B-14/419
         password:
           type: string
           example: 123$%mystore
-        opt_for_delivery_boy:
-          type: boolean
-          example: false
-        local_store:
-          type: boolean
-          example: false
-        owns_store: 
-          type: boolean
-          example: false
-        tags:
-          type: string
-          example: grocery,food,shop
     VendorResponse:
       type: object
       properties:
