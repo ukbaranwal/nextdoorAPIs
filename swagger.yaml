@@ -7,7 +7,7 @@ info:
   version: 1.0.0
 servers:
 - url: localhost:8080
-- url: localhost:4000
+- url: http://localhost:3000
 tags:
 - name: Vendor
   description: APIs for Vendors
@@ -17,7 +17,7 @@ tags:
   description: APIs for Delivery Boys
 
 paths:
-  /vendor/signup:
+  /vendors/signup:
     post:
       tags:
       - Vendor
@@ -32,15 +32,17 @@ paths:
         required: true
       responses:
         200:
-          description: Signup was Successfull
-        400:
           description: Vendor already Registered
-        401:
-          description: Vendor is Banned for Malicious Activities
-        405:
-          description: Invalid input
+        201:
+          description: Signup was Successfull
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
           content: {}
-  /vendor/login:
+  /vendors/signin:
     post:
       tags: 
         - Vendor
@@ -64,19 +66,89 @@ paths:
                   example: 123$%mystore
         required: true
       responses:
-        200:
+        202:
           description: Login was Successfull
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/VendorResponse'
-        400:
-          description: Vendor not Registered
+        204:
+          description: Vendor not found
         401:
-          description: Vendor is Banned for Malicious Activities
-        405:
-          description: Invalid input
-          content: {}
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/forgotpassword:
+    post:
+      tags: 
+        - Vendor
+      summary: Used to request reset pin to change password for vendors
+      operationId: forgotPasswordRequest
+      requestBody: 
+        description: Email ID of Vendor
+        content:
+          application/json:
+            schema: 
+              required:
+                - email
+              type: object
+              properties: 
+                email:
+                  type: string
+                  example: mystore@gmail.com
+        required: true
+      responses:
+        200:
+          description: Reset Pin has been sent on Email 
+        204:
+          description: Vendor not found
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    put:
+      tags:
+        - Vendor
+      summary: Used to change password with the requested Pin
+      operationId: forgotPasswordChange
+      requestBody:
+        description: Email ID along with Password and Secret Pin
+        content:
+          application/json:
+            schema:
+              required:
+                - email
+                - password
+                - pin 
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: mystore@gmail.com
+                password:
+                  type: string
+                  example: 123$%mystore
+                pin: 
+                  type: string
+                  example: 1234
+        required: true
+      responses:
+        202:
+          description: Password has been changed
+        204:
+          description: Vendor not found
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
 
 components:
   schemas:
@@ -87,6 +159,7 @@ components:
       - phone
       - password
       - city
+      - vendor_type
       type: object
       properties:
         name:
@@ -104,6 +177,9 @@ components:
         password:
           type: string
           example: 123$%mystore
+        vendor_type:
+          type: integer
+          example: 1
     VendorResponse:
       type: object
       properties:

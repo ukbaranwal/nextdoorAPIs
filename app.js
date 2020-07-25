@@ -1,13 +1,12 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger.yaml');
 const sequelize = require('./util/database');
-const Vendor = require('./models/vendor');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -15,11 +14,11 @@ const vendorsRouter = require('./routes/vendor');
 
 var app = express();
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
+// app.use(function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//   next();
+// });
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,10 +30,20 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 app.use('/', indexRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/users', usersRouter);
-app.use('/vendor', vendorsRouter);
+app.use('/vendors', vendorsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -42,23 +51,18 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.use((err, req, res, next) => {
+  const status = err.statusCode || 500;
+  const message = err.message;
+  const data = err.data;
+  res.status(status).json({ message: message, data: data });
 });
 
 sequelize.
   // sync({force: true})
   sync()
   .then(result => {
-    return Vendor.findByPk(1);
-  }).then(vendor => {
-    console.log(vendor);
+    console.log('Database Connected');
   }).catch(err => {
     console.log(err);
   })

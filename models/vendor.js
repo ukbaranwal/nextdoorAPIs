@@ -34,7 +34,6 @@ const Vendor = sequelize.define('vendor', {
   payable: Sequelize.FLOAT,
   delivery_boy: Sequelize.INTEGER,
   owns_store: Sequelize.BOOLEAN, 
-  session_token: Sequelize.STRING,
   reset_password_token: Sequelize.STRING,
   reset_password_time: Sequelize.DATE,
   opening_time: Sequelize.STRING,
