@@ -149,6 +149,237 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
+  /vendors/changepassword:
+    post:
+      tags: 
+        - Vendor
+      summary: Used to change password for vendors
+      operationId: changePassword
+      requestBody: 
+        description: old and new password
+        content:
+          application/json:
+            schema: 
+              required:
+                - password
+                - new_password
+              type: object
+              properties: 
+                password:
+                  type: string
+                  example: 12345j63
+                new_password:
+                  type: string
+                  example: 123rf43re
+        required: true
+      responses:
+        202:
+          description: Password Successfully changed
+        401:
+          description: Unauthorized Access
+        204:
+          description: Vendor not found
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/updateStatus:
+    put:
+      tags: 
+        - Vendor
+      summary: Updates Shop status if it is open or closed
+      operationId: updateStatus
+      requestBody:
+        description: boolean value shop_open
+        content:
+          application/json:
+            schema:
+              required: 
+                - shop_open
+              type: object
+              properties: 
+                shop_open:
+                  type: boolean
+                  example: false
+        required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/updateDashboard:
+    put:
+      tags: 
+        - Vendor
+      summary: Updates Dashboard
+      operationId: updateDashboard
+      requestBody:
+        description: Used by vendors only first time
+        content:
+          application/json:
+            schema:
+              required: 
+                - name
+                - shop_name
+                - address
+                - city
+                - tags
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: Utkarsh
+                shop_name:
+                  type: string
+                  example: UB Stores
+                address:
+                  type: string
+                  example: B14/172
+                city:
+                  type: string
+                  example: Kalyani
+                tags:
+                  type: string
+                  example: Clothes, Shop
+        required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/updateDashboardLogo:
+    put:
+      tags: 
+        - Vendor
+      summary: Updates Shop Logo
+      operationId: updateDashboardLogo
+      requestBody:
+        description: Used by vendors to upload there logo
+        content:
+          multipart/form-data:
+            schema:
+              image:
+                type: file
+        required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error    
+  /vendors/deleteDashboardLogo:
+    put:
+      tags: 
+        - Vendor
+      summary: Deletes Shop Logo
+      operationId: deleteDashboardLogo
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error     
+  /vendors/updateTime:
+    put:
+      tags: 
+        - Vendor
+      summary: Updates Shop Timing
+      operationId: updateTime
+      requestBody:
+        description: Used by vendors to update there timings
+        content:
+          application/json:
+            schema:
+              required: 
+                - opening_time
+                - closing_time
+              type: object
+              properties: 
+                opening_time:
+                  type: string
+                  example: 10AM
+                closing_time:
+                  type: string
+                  example: 11PM
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error  
+  /vendors/updateLocation:
+    put:
+      tags: 
+        - Vendor
+      summary: Updates Location
+      operationId: updateLocation
+      requestBody:
+        description: Used by vendors to update their location
+        content:
+          application/json:
+            schema:
+              required: 
+                - location_lat
+                - location_long
+              type: object
+              properties: 
+                location_lat:
+                  type: string
+                  example: 3.123245676564532
+                location_long:
+                  type: string
+                  example: 4.2324565653425664
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error    
+
 
 components:
   schemas:

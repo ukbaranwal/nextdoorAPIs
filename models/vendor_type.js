@@ -9,7 +9,8 @@ const VendorType = sequelize.define('vendor_type', {
     primaryKey: true
   },
   name: {type: Sequelize.STRING, allowNull: false},
-  service: Sequelize.STRING,
+  service: {type:Sequelize.BOOLEAN, defaultValue: false},
+  selling: {type:Sequelize.BOOLEAN, defaultValue: false},
   delivery_boy_needed: Sequelize.BOOLEAN,
   store_needed: Sequelize.BOOLEAN,
   image_url: Sequelize.STRING

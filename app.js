@@ -11,24 +11,16 @@ const sequelize = require('./util/database');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const vendorsRouter = require('./routes/vendor');
+const adminsRouter = require('./routes/admin');
 
 var app = express();
-
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,6 +36,7 @@ app.use('/', indexRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/users', usersRouter);
 app.use('/vendors', vendorsRouter);
+app.use('/admins', adminsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
