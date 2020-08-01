@@ -7,37 +7,37 @@ const multer = require('multer');
 const path = require('path');
 
 const fileStorageVendorType = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join('images','vendor_type'));
-  },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + '-' + file.originalname);
-  }
+    destination: (req, file, cb) => {
+        cb(null, path.join('images', 'vendor_type'));
+    },
+    filename: (req, file, cb) => {
+        cb(null, new Date().toISOString() + '-' + file.originalname);
+    }
 });
 
 const fileFilter = (req, file, cb) => {
-  if (
-      file.mimetype === 'image/png' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/jpeg'
-  ) {
-      cb(null, true);
-  } else {
-      cb(null, false);
-  }
-  };
+    if (
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/jpeg'
+    ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
 
 const fileStorageProductCategory = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, path.join('images','product_category'));
+        cb(null, path.join('images', 'product_category'));
     },
     filename: (req, file, cb) => {
-      cb(null, new Date().toISOString() + '-' + file.originalname);
+        cb(null, new Date().toISOString() + '-' + file.originalname);
     }
-  });
+});
 
 const uploadVendorType = multer({ storage: fileStorageVendorType, fileFilter: fileFilter });
-const uploadProductCategory = multer({storage: fileStorageProductCategory, fileFilter: fileFilter})
+const uploadProductCategory = multer({ storage: fileStorageProductCategory, fileFilter: fileFilter })
 
 router.post('/signup',
     [
@@ -54,8 +54,8 @@ router.post('/signup',
             .not()
             .isEmpty(),
         body('password')
-        .matches(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
-        .withMessage('Password should be combination of one uppercase , one lower case, one special char, one digit and min 8 , max 20 char long'),
+            .matches(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
+            .withMessage('Password should be combination of one uppercase , one lower case, one special char, one digit and min 8 , max 20 char long'),
     ],
     adminController.postSignup);
 
@@ -72,16 +72,16 @@ router.post('/signin',
     ],
     adminController.postSignin);
 
-router.put('/addVendorType',isRoot, uploadVendorType.single('image'), adminController.putVendorType);
+router.put('/vendorType', isRoot, uploadVendorType.single('image'), adminController.putVendorType);
 
-router.patch('/updateVendorType',isRoot, uploadVendorType.single('image'), adminController.patchVendorType);
+router.patch('/vendorType', isRoot, uploadVendorType.single('image'), adminController.patchVendorType);
 
-router.delete('/deleteVendorType', isRoot,adminController.deleteVendorType);
+router.delete('/vendorType', isRoot, adminController.deleteVendorType);
 
-router.put('/addProductCategory', isRoot, uploadProductCategory.single('image'), adminController.putProductCategory);
+router.put('/productCategory', isRoot, uploadProductCategory.single('image'), adminController.putProductCategory);
 
-router.patch('/updateProductCategory', isRoot, uploadProductCategory.single('image'), adminController.patchProductCategory);
+router.patch('/productCategory', isRoot, uploadProductCategory.single('image'), adminController.patchProductCategory);
 
-router.delete('/deleteProductCategory', isRoot, adminController.deleteProductCategory);
+router.delete('/productCategory', isRoot, adminController.deleteProductCategory);
 
 module.exports = router;
