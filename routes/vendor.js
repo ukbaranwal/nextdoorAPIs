@@ -2,9 +2,11 @@ var express = require('express');
 var router = express.Router();
 const vendorController = require('../controllers/vendor');
 const { body } = require('express-validator');
+//is Auth is to check if vendor is Authorised to access
 const isAuth = require('../middlewares/is-auth');
 const multer = require('multer');
 const path = require('path');
+const isAllowed = require('../middlewares/is-allowed');
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -14,6 +16,15 @@ const fileStorage = multer.diskStorage({
     cb(null, new Date().toISOString() + '-' + file.originalname);
   }
 });
+
+const fileStorageProducts = multer.diskStorage({
+  destination: (req, file, cb)=>{
+    cb(null, path.join('images','products'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+})
 
 const fileFilter = (req, file, cb) => {
   if (
@@ -28,6 +39,7 @@ const fileFilter = (req, file, cb) => {
   };
 
 const upload = multer({ storage: fileStorage, fileFilter: fileFilter });
+const productUpload = multer({storage: fileStorageProducts, fileFilter: fileFilter});
 
 router.post('/signup',
   [
@@ -99,5 +111,17 @@ router.patch('/changePassword', body('new_password')
 router.patch('/shopTime', isAuth, vendorController.putUpdateTime);
 
 router.patch('/shopLocation', isAuth, vendorController.putUpdateLocation);
+
+router.put('/product', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
+
+router.patch('/product', isAuth, isAllowed, vendorController.patchProduct);
+
+router.delete('/product', isAuth, isAllowed, vendorController.deleteProduct);
+
+router.patch('/productInStock', isAuth, isAllowed, vendorController.patchProductInStock);
+
+router.put('/productImage', isAuth, isAllowed, productUpload.single('image'), vendorController.addProductImage);
+
+router.delete('/productImage', isAuth, isAllowed, vendorController.deleteProductImage);
 
 module.exports = router;

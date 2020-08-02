@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const VendorType = require('../models/vendor_type');
 const ProductCategory = require('../models/product_category');
 const fileHelper = require('../util/delete-file');
+const ProductTemplate = require('../models/product_template');
 
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
@@ -458,15 +459,269 @@ exports.deleteProductCategory = (req, res, next) => {
             fileHelper.deleteFile(productCategory.image_url);
         }
         return productCategory.destroy()
-        .then(result=>{
-            res.status(200).json({ message: 'Product Category Deleted' });
-        })
+            .then(result => {
+                res.status(200).json({ message: 'Product Category Deleted' });
+            })
     })
-        
+
         .catch(err => {
             if (!err.statusCode) {
                 err.statusCode = 500;
             }
             next(err);
         });
+};
+
+exports.putProductTemplate = (req, res, next) => {
+    const name = req.body.name;
+    const brand = req.body.brand;
+    const description = req.body.description;
+    const standard_quantity_selling = req.body.standard_quantity_selling;
+    const mrp = req.body.mrp;
+    const tags = req.body.tags;
+    const product_category_id = req.body.product_category_id;
+    const images = req.files;
+    if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!description) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!standard_quantity_selling) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!mrp) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!tags) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!product_category_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!images){
+        return res.status(422).json({ message: 'Attached file is not an Image' });
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    var images_json = [];
+    for(var i=0; i<images.length; i++){
+        images_json.push({"image_url":images[i].path})
+    }
+    ProductTemplate.create({name: name, description: description, standard_quantity_selling: standard_quantity_selling, mrp: mrp,tags:tags, product_category_id:product_category_id, brand: brand, images: images_json})
+    .then(productTemplate=>{
+        return res.status(201).json({message: 'You have successfully added a product template'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.patchProductTemplate = (req, res, next) => {
+    const product_template_id = req.body.product_template_id;
+    const name = req.body.name;
+    const description = req.body.description;
+    const brand = req.body.brand;
+    const product_category_id = req.body.product_category_id;
+    const standard_quantity_selling = req.body.standard_quantity_selling;
+    const mrp = req.body.mrp;
+    const tags = req.body.tags;
+    if(!product_template_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!description) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!product_category_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    
+    if (!standard_quantity_selling) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!mrp) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!tags) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    ProductTemplate.findByPk(product_template_id)
+    .then(productTemplate=>{
+        if(!productTemplate){
+            const error = new Error('Product Template not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        productTemplate.name = name;
+        productTemplate.description = description;
+        productTemplate.brand = brand;
+        productTemplate.product_category_id = product_category_id;
+        productTemplate.standard_quantity_selling = standard_quantity_selling;
+        productTemplate.mrp = mrp;
+        productTemplate.tags = tags;
+        return productTemplate.save()
+    })
+    .then(productTemplate=>{
+        return res.status(200).json({message:'Product template details successfully updated'})
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.deleteProductTemplateImage = (req, res, next) =>{
+    const image_url = req.body.image_url;
+    const product_template_id = req.body.product_template_id;
+    if(!image_url){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!product_template_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    ProductTemplate.findByPk(product_template_id)
+    .then(productTemplate=>{
+        if(!productTemplate){
+            const error = new Error('Product Template not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        var images_json = [];
+        var flag = false;
+        for(var i=0; i<productTemplate.images.length; i++){
+            if(productTemplate.images[i].image_url===image_url){
+                fileHelper.deleteFile(image_url);
+                flag = true;
+            }
+            else{
+                images_json.push({"image_url":productTemplate.images[i].image_url})
+            }
+        }
+        if(!flag){
+            const error = new Error('No image found with this url');
+            error.statusCode = 404;
+            throw error;
+        }
+        productTemplate.images = images_json;
+        return productTemplate.save();
+    })
+    .then(productTemplate=>{
+        res.status(200).json({message:"Image successfully deleted"});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.putProductTemplateImage = (req, res, next) =>{
+    const product_template_id = req.body.product_template_id;
+    const image = req.file;
+    if(!image){
+        const error = new Error('Check for the image file');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!product_template_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    const image_url = image.path;
+    ProductTemplate.findByPk(product_template_id)
+    .then(productTemplate=>{
+        if(!productTemplate){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(productTemplate.images.length>3){
+            const error = new Error('Maximum no. of images reached');
+            error.statusCode = 406;
+            throw error;
+        }
+        var images_json = [];
+        for(var i=0; i<productTemplate.images.length; i++){
+            images_json.push({"image_url":productTemplate.images[i].image_url})
+        }
+        images_json.push({"image_url":image_url});
+        productTemplate.images = images_json;
+        return productTemplate.save();
+    })
+    .then(productTemplate=>{
+        res.status(201).json({message:"Image successfully uploaded"});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
 };

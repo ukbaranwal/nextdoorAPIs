@@ -6,7 +6,6 @@ info:
     email: ukbaranwal@gmail.com
   version: 1.0.0
 servers:
-- url: localhost:8080
 - url: http://localhost:3000
 tags:
 - name: Vendor
@@ -82,7 +81,7 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-  /vendors/forgotpassword:
+  /vendors/forgotPassword:
     post:
       tags: 
         - Vendor
@@ -112,7 +111,7 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-    put:
+    patch:
       tags:
         - Vendor
       summary: Used to change password with the requested Pin
@@ -149,8 +148,8 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-  /vendors/changepassword:
-    post:
+  /vendors/changePassword:
+    patch:
       tags: 
         - Vendor
       summary: Used to change password for vendors
@@ -185,8 +184,8 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-  /vendors/updateStatus:
-    put:
+  /vendors/status:
+    patch:
       tags: 
         - Vendor
       summary: Updates Shop status if it is open or closed
@@ -215,8 +214,8 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-  /vendors/updateDashboard:
-    put:
+  /vendors/dashboard:
+    patch:
       tags: 
         - Vendor
       summary: Updates Dashboard
@@ -263,20 +262,23 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
-  /vendors/updateDashboardLogo:
-    put:
+  /vendors/dashboardLogo:
+    patch:
       tags: 
         - Vendor
       summary: Updates Shop Logo
       operationId: updateDashboardLogo
       requestBody:
-        description: Used by vendors to upload there logo
         content:
           multipart/form-data:
             schema:
-              image:
-                type: file
-        required: true
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+
+      required: true
       responses:
         200:
           description: Successfully Updated
@@ -290,8 +292,7 @@ paths:
           description: Validation Failed
         500:
           description: Server Error    
-  /vendors/deleteDashboardLogo:
-    put:
+    delete:
       tags: 
         - Vendor
       summary: Deletes Shop Logo
@@ -309,8 +310,8 @@ paths:
           description: Validation Failed
         500:
           description: Server Error     
-  /vendors/updateTime:
-    put:
+  /vendors/shopTime:
+    patch:
       tags: 
         - Vendor
       summary: Updates Shop Timing
@@ -343,8 +344,8 @@ paths:
           description: Validation Failed
         500:
           description: Server Error  
-  /vendors/updateLocation:
-    put:
+  /vendors/shopLocation:
+    patch:
       tags: 
         - Vendor
       summary: Updates Location
@@ -379,10 +380,108 @@ paths:
           description: Validation Failed
         500:
           description: Server Error    
+  /vendors/product:
+    put:
+      tags: 
+        - Vendor
+      summary: Adds a new product
+      operationId: addProduct
+      requestBody:
+        description: Used by vendors to add their products
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              $ref: '#/components/schemas/ProductRequest'
+      required: true
+      responses:
+        201:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error   
+    patch:
+      tags: 
+        - Vendor
+      summary: Edits a product
+      operationId: editProduct
+      requestBody:
+        description: Used by vendors to edit their products
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      required: true
+      responses:
+        201:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
 
 
 components:
   schemas:
+    ProductRequest:
+      required: 
+        - name
+        - description
+        - brand
+        - product_category_id
+        - standard_quantity_selling
+        - mrp 
+        - discount_percentage
+        - max_quantity
+        - tags
+      type: object
+      properties: 
+        name:
+          type: string
+          example: Roadster Tshirt
+        description:
+          type: string
+          example: Roadster Tshirt for men
+        brand:
+          type: string
+          example: Roadster
+        product_category_id:
+          type: integer
+          example: 1
+        standard_quantity_selling:
+          type: integer
+          example: 1
+        mrp:
+          type: float
+          example: 499.0
+        discount_percentage:
+          type: integer
+          example: 30
+        max_quantity:
+          type: float
+          example: 5
+        tags:
+          type: string
+          example: Roadster, Tshirt, Men's Tshirt
     Vendor:
       required:
       - name

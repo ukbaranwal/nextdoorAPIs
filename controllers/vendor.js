@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fileHelper = require('../util/delete-file');
+const Product = require('../models/product');
 
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
@@ -512,4 +513,392 @@ exports.putUpdateLocation = (req, res, next) => {
             }
             next(err);
         });
-}
+};
+
+exports.putProduct = (req, res, next) =>{
+    const name = req.body.name;
+    const description = req.body.description;
+    const brand = req.body.brand;
+    const product_category_id = req.body.product_category_id;
+    const standard_quantity_selling = req.body.standard_quantity_selling;
+    const mrp = req.body.mrp;
+    const discount_percentage = req.body.discount_percentage;
+    const max_quantity = req.body.max_quantity;
+    const tags = req.body.tags;
+    // const existing_product_id = req.body.existing_product_id;
+    //TODO: Manage existing products
+    const images = req.files;
+    
+    if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!description) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!product_category_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    
+    if (!standard_quantity_selling) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!mrp) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!discount_percentage) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!max_quantity) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!tags) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    var images_json = [];
+    ///Todo: Product category check if image required
+    if(images){
+        for(var i=0; i<images.length; i++){
+            images_json.push({"image_url":images[i].path})
+        }
+    }
+    req.vendor.createProduct({name: name, description: description, standard_quantity_selling: standard_quantity_selling, mrp: mrp, discount_percentage: discount_percentage, max_quantity: max_quantity,tags:tags, product_category_id:product_category_id, brand: brand, images: images_json})
+    .then(product=>{
+        return res.status(201).json({message: 'Congrats, You have successfully added your product'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.patchProduct = (req, res, next) =>{
+    const product_id = req.body.product_id;
+    const name = req.body.name;
+    const description = req.body.description;
+    const brand = req.body.brand;
+    const product_category_id = req.body.product_category_id;
+    const standard_quantity_selling = req.body.standard_quantity_selling;
+    const mrp = req.body.mrp;
+    const discount_percentage = req.body.discount_percentage;
+    const max_quantity = req.body.max_quantity;
+    const tags = req.body.tags;
+    if(!product_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!description) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!product_category_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    
+    if (!standard_quantity_selling) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!mrp) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!discount_percentage) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!max_quantity) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!tags) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Product.findByPk(product_id)
+    .then(product=>{
+        if(!product){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(product.vendor_id.toString()!==req.id){
+            const error = new Error('You are not allowed to access this');
+            error.statusCode = 403;
+            throw error;
+        }
+        product.name = name;
+        product.description = description;
+        product.brand = brand;
+        product.product_category_id = product_category_id;
+        product.standard_quantity_selling = standard_quantity_selling;
+        product.mrp = mrp;
+        product.discount_percentage = discount_percentage;
+        product.max_quantity = max_quantity;
+        product.tags = tags;
+        return product.save()
+    })
+    .then(product=>{
+        return res.status(200).json({message:'Product Details successfully updated'})
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.deleteProduct = (req, res, next) =>{
+    const product_id = req.body.product_id;
+    if(!product_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Product.findByPk(product_id)
+    .then(product=>{
+        if(!product){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(product.vendor_id.toString()!==req.id){
+            const error = new Error('You are not allowed to delete this');
+            error.statusCode = 403;
+            throw error;
+        }
+        for(var i=0; i<product.images.length; i++){
+            fileHelper.deleteFile(product.images[i].image_url);
+        }
+        product.deleted = true;
+        return product.save();
+    })
+    .then(product=>{
+        return res.status(200).json({message:'Product successfully deleted'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.patchProductInStock = (req, res, next) =>{
+    const product_id = req.body.product_id;
+    const in_stock = req.body.in_stock;
+
+    if(!product_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(in_stock==null){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Product.findByPk(product_id)
+    .then(product=>{
+        if(!product){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(product.vendor_id.toString()!==req.id){
+            const error = new Error('You are not allowed to delete this');
+            error.statusCode = 403;
+            throw error;
+        }
+        product.in_stock = in_stock;
+        return product.save()
+    })
+    .then(product=>{
+        return res.status(200).json({message:'Product Details successfully updated'})
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.deleteProductImage = (req, res, next) =>{
+    const image_url = req.body.image_url;
+    const product_id = req.body.product_id;
+    if(!image_url){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!product_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Product.findByPk(product_id)
+    .then(product=>{
+        if(!product){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(product.vendor_id.toString()!==req.id){
+            const error = new Error('You are not allowed to delete this');
+            error.statusCode = 403;
+            throw error;
+        }
+        var images_json = [];
+        var flag = false;
+        for(var i=0; i<product.images.length; i++){
+            if(product.images[i].image_url===image_url){
+                fileHelper.deleteFile(image_url);
+                flag = true;
+            }
+            else{
+                images_json.push({"image_url":product.images[i].image_url})
+            }
+        }
+        if(!flag){
+            const error = new Error('No image found with this url');
+            error.statusCode = 404;
+            throw error;
+        }
+        product.images = images_json;
+        return product.save();
+    })
+    .then(product=>{
+        res.status(200).json({message:"Image successfully deleted"});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
+exports.addProductImage = (req, res, next) =>{
+    const product_id = req.body.product_id;
+    const image = req.file;
+    if(!image){
+        const error = new Error('Check for the image file');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!product_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    const image_url = image.path;
+    Product.findByPk(product_id)
+    .then(product=>{
+        if(!product){
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        if(product.vendor_id.toString()!==req.id){
+            const error = new Error('You are not allowed to delete this');
+            error.statusCode = 403;
+            throw error;
+        }
+        if(product.images.length>3){
+            const error = new Error('Maximum no. of images reached');
+            error.statusCode = 406;
+            throw error;
+        }
+        var images_json = [];
+        for(var i=0; i<product.images.length; i++){
+            images_json.push({"image_url":product.images[i].image_url})
+        }
+        images_json.push({"image_url":image_url});
+        product.images = images_json;
+        return product.save();
+    })
+    .then(product=>{
+        res.status(201).json({message:"Image successfully uploaded"});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};

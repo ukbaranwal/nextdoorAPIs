@@ -1,20 +1,26 @@
 var express = require('express');
 var router = express.Router();
 const adminController = require('../controllers/admin');
+//body is to validate inputs
 const { body } = require('express-validator');
+//isRoot is middleware to check if admin has root access
 const isRoot = require('../middlewares/is-root');
+//multer is to manage files
 const multer = require('multer');
 const path = require('path');
 
+//File Path for Vendor Type
 const fileStorageVendorType = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join('images', 'vendor_type'));
     },
+    //File name for images stored
     filename: (req, file, cb) => {
         cb(null, new Date().toISOString() + '-' + file.originalname);
     }
 });
 
+//images filter
 const fileFilter = (req, file, cb) => {
     if (
         file.mimetype === 'image/png' ||
@@ -27,6 +33,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+//file storage for product category
 const fileStorageProductCategory = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join('images', 'product_category'));
@@ -36,8 +43,19 @@ const fileStorageProductCategory = multer.diskStorage({
     }
 });
 
+//file storage for product templates
+const fileStorageProductTemplate = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join('images', 'product_templates'));
+    },
+    filename: (req, file, cb) => {
+        cb(null, new Date().toISOString() + '-' + file.originalname);
+    }
+});
+
 const uploadVendorType = multer({ storage: fileStorageVendorType, fileFilter: fileFilter });
-const uploadProductCategory = multer({ storage: fileStorageProductCategory, fileFilter: fileFilter })
+const uploadProductCategory = multer({ storage: fileStorageProductCategory, fileFilter: fileFilter });
+const uploadProductTemplate = multer({storage: fileStorageProductTemplate, fileFilter: fileFilter});
 
 router.post('/signup',
     [
@@ -83,5 +101,13 @@ router.put('/productCategory', isRoot, uploadProductCategory.single('image'), ad
 router.patch('/productCategory', isRoot, uploadProductCategory.single('image'), adminController.patchProductCategory);
 
 router.delete('/productCategory', isRoot, adminController.deleteProductCategory);
+
+router.put('/productTemplate', isRoot, uploadProductTemplate.array('images', 4), adminController.putProductTemplate);
+
+router.patch('/productTemplate', isRoot, adminController.patchProductTemplate);
+
+router.put('/productTemplateImage', isRoot, uploadProductTemplate.single('image'), adminController.putProductTemplateImage);
+
+router.delete('/productTemplateImage', isRoot, adminController.deleteProductTemplateImage);
 
 module.exports = router;

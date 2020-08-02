@@ -8,10 +8,20 @@ const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger.yaml');
 const sequelize = require('./util/database');
 
+//Routers
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const vendorsRouter = require('./routes/vendor');
 const adminsRouter = require('./routes/admin');
+
+//Models
+const Product = require('./models/product');
+const Vendor = require('./models/vendor');
+const ProductCategory = require('./models/product_category');
+const ProductTemplate = require('./models/product_template');
+
+///Helper to delete files
+const fileHandler = require('./util/delete-file');
 
 var app = express();
 
@@ -19,6 +29,8 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+//exposes folders to public
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -33,6 +45,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/', indexRouter);
+//Swagger API Docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/users', usersRouter);
 app.use('/vendors', vendorsRouter);
@@ -48,11 +61,36 @@ app.use((err, req, res, next) => {
   const status = err.statusCode || 500;
   const message = err.message;
   const data = err.data;
+
+  //If error's thrown delete files that got stored
+  if(req.files){
+    for(var i=0; i<req.files.length; i++){
+      fileHandler.deleteFile(req.files[i].path);
+    }
+  }
+  if(req.file){
+    fileHandler.deleteFile(req.file.path);
+  }
   res.status(status).json({ message: message, data: data });
 });
 
+
+//Associations
+//Product has a foreign key product_category_id
+Product.belongsTo(ProductCategory, {foreignKey: 'product_category_id'});
+ProductCategory.hasMany(Product, {foreignKey: 'product_category_id'});
+//Product has a foreign key vendor_id
+Product.belongsTo(Vendor, {foreignKey: 'vendor_id'});
+Vendor.hasMany(Product, {foreignKey: 'vendor_id'});
+//Product Template has a foreign key product_category_id
+ProductTemplate.belongsTo(ProductCategory, {foreignKey: 'product_category_id'});
+
 sequelize.
+//this is to drop and recreate tables
   // sync({force: true})
+  //this is to update some parts of tables
+  // sync({alter: true})
+  //for normal uses
   sync()
   .then(result => {
     console.log('Database Connected');
