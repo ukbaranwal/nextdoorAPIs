@@ -118,7 +118,7 @@ exports.postSignin = (req, res, next) => {
                     'somesupersecretsecretadmin',
                 );
                 loadedAdmin.password = null;
-                res.status(202).json({ token: token, admin: loadedAdmin });
+                res.status(202).json({ token: 'Bearer '+token, admin: loadedAdmin });
             })
 
     })

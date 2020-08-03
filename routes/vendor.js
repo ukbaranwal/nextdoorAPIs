@@ -75,14 +75,14 @@ router.post('/signin',
   ],
   vendorController.postSignin);
 
-router.post('/forgotpassword',
+router.post('/forgotPassword',
   body('email')
     .isEmail()
     .withMessage('Please enter a valid email.')
     .normalizeEmail(),
   vendorController.postForgotPassword);
 
-router.patch('/forgotpassword',
+router.patch('/forgotPassword',
   [
     body('email')
       .isEmail()

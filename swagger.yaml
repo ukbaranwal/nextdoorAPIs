@@ -5,6 +5,12 @@ info:
   contact:
     email: ukbaranwal@gmail.com
   version: 1.0.0
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
 servers:
 - url: http://localhost:3000
 tags:
@@ -14,6 +20,11 @@ tags:
   description: APIs for Users
 - name: Delivery Boys
   description: APIs for Delivery Boys
+- name: Admin
+  description: APIs for Admin
+
+security:
+  - bearerAuth: [] 
 
 paths:
   /vendors/signup:
@@ -421,13 +432,13 @@ paths:
       requestBody:
         description: Used by vendors to edit their products
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              $ref: '#/components/schemas/ProductRequest'
+              $ref: '#/components/schemas/ProductEditRequest'
       required: true
       responses:
-        201:
-          description: Successfully Added
+        200:
+          description: Successfully Updated
         401:
           description: Unauthorized Access
         403:
@@ -438,15 +449,658 @@ paths:
           description: Validation Failed
         500:
           description: Server Error 
-
-
+    delete:
+      tags: 
+        - Vendor
+      summary: Deletes a product
+      operationId: deleteProduct
+      requestBody:
+        description: Used by vendors to delete their products
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+              type: object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+      required: true
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
+  /vendors/productInStock:
+    patch:
+      tags:
+        - Vendor
+      summary: Updates product when instock or outofstock
+      operationId: productInStock
+      requestBody:
+        description: Used by vendors to update their products if they are in stock
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - in_stock
+              type: object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                in_stock:
+                  type: boolean
+                  example: true
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
+  /vendors/productImage:
+    put:
+      tags:
+        - Vendor
+      summary: Updates product's Image
+      operationId: productAddImage
+      requestBody:
+        description: Used by vendors to update their products images
+        content:
+          multipart/form:
+            schema:
+              required:
+                - product_id
+                - image
+              type: object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                image:
+                  type: string
+                  format: binary
+      required: true
+      responses:
+        201:
+          description: Successfully Uploaded
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        406:
+          description: Maximum no. of images reached
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags:
+        - Vendor
+      summary: Deletes product's Image
+      operationId: productDeleteImage
+      requestBody:
+        description: Used by vendors to delete their products images
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - image_url
+              type: object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                image:
+                  type: string
+                  example: a.jpeg
+      required: true
+      responses:
+        200:
+          description: Successfully Uploaded
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        406:
+          description: Maximum no. of images reached
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /admins/signup:
+    post:
+      tags:
+      - Admin
+      summary: Signups an Admin
+      operationId: signupAdmin
+      requestBody:
+        description: An Admin get Registered
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendor'
+        required: true
+      responses:
+        200:
+          description: Admin already Registered
+        201:
+          description: Signup was Successfull
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+          content: {}
+  /admins/signin:
+    post:
+      tags: 
+        - Admin
+      summary: Logins an Admin
+      operationId: loginAdmin
+      requestBody:
+        description: Email ID and Password of Admin
+        content:
+          application/json:
+            schema:
+              required: 
+                - email
+                - password
+              type: object
+              properties: 
+                email:
+                  type: string
+                  example: mystore@gmail.com
+                password:
+                  type: string
+                  example: 123$%mystore
+        required: true
+      responses:
+        202:
+          description: Login was Successfull
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorResponse'
+        204:
+          description: Vendor not found
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /admins/vendorType:
+    put:
+      tags: 
+        - Admin
+      summary: Used to add more vendors type or categories
+      operationId: addVendorType
+      requestBody:
+        content:
+          multipart/form:
+            schema:
+              required: 
+                - name
+                - service
+                - standard_quantity_selling
+                - delivery_boy_needed
+                - store_needed
+                - image
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: ABC
+                service:
+                  type: boolean
+                  example: false
+                selling:
+                  type: boolean
+                  example: true
+                delivery_boy_needed:
+                  type: boolean
+                  example: true
+                store_needed:
+                  type: boolean
+                  example: true
+                image:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        200:
+          description: category already exists
+        201:
+          description: category added
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    patch:
+      tags: 
+        - Admin
+      summary: Updates Vendor type
+      operationId: updateVendorType
+      requestBody:
+        description: Used by admins to update vendor category
+        content:
+          multipart/form:
+            schema:
+              required: 
+                - name
+                - service
+                - standard_quantity_selling
+                - delivery_boy_needed
+                - store_needed
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: ABC
+                service:
+                  type: boolean
+                  example: false
+                selling:
+                  type: boolean
+                  example: true
+                delivery_boy_needed:
+                  type: boolean
+                  example: true
+                store_needed:
+                  type: boolean
+                  example: true
+                image:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags: 
+        - Admin
+      summary: Deletes vendor categories
+      operationId: deleteVendorType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+                - id
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: 1
+      required: true
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error    
+  /admins/productCategory:
+    put:
+      tags: 
+        - Admin
+      summary: Adds product categories
+      operationId: addProductCategory
+      requestBody:
+        description: Used by admins to create new product categories 
+        content:
+          multipart/form:
+            schema:
+              required: 
+                - name
+                - quantity_by_weight
+                - quantity_by_piece
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: Tshirt
+                parent_id:
+                  type: string
+                  example: 1
+                tags:
+                  type: string
+                  example: Tshirt,Men's Tshirt
+                quantity_by_weight:
+                  type: boolean
+                  example: false
+                quantity_by_piece:
+                  type: boolean
+                  example: true
+                image:
+                  type: string
+                  format: binary
+      required: true
+      responses:
+        200:
+          description: Already exists
+        201:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
+    patch:
+      tags: 
+        - Admin
+      summary: Edit product categories
+      operationId: editProductCategory
+      requestBody:
+        description: Used by admins to edit product categories 
+        content:
+          multipart/form:
+            schema:
+              required: 
+                - id
+                - name
+                - quantity_by_weight
+                - quantity_by_piece
+              type: object
+              properties: 
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: Tshirt
+                parent_id:
+                  type: string
+                  example: 1
+                tags:
+                  type: string
+                  example: Tshirt,Men's Tshirt
+                quantity_by_weight:
+                  type: boolean
+                  example: false
+                quantity_by_piece:
+                  type: boolean
+                  example: true
+                image:
+                  type: string
+                  format: binary
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags: 
+        - Admin
+      summary: Deletes product categories
+      operationId: deleteProductCategory
+      requestBody:
+        description: Used by admins to delete product categories 
+        content:
+          application/json:
+            schema:
+              required: 
+                - id
+              type: object
+              properties: 
+                id:
+                  type: integer
+                  example: 1
+      required: true
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error  
+  /admins/productTemplate:
+    put:
+      tags: 
+        - Admin
+      summary: Adds product templates
+      operationId: addProductTemplate
+      requestBody:
+        description: Used by admins to create new product templates 
+        content:
+          multipart/form:
+            schema:
+              required: 
+                - name
+                - description
+                - product_category_id
+                - standard_quantity_selling
+                - mrp 
+                - tags
+                - images
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: Roadster Tshirt
+                description:
+                  type: string
+                  example: Roadster Tshirt for men
+                brand:
+                  type: string
+                  example: Roadster
+                product_category_id:
+                  type: integer
+                  example: 1
+                standard_quantity_selling:
+                  type: integer
+                  example: 1
+                mrp:
+                  type: float
+                  example: 499.0
+                tags:
+                  type: string
+                  example: Roadster, Tshirt, Men's Tshirt
+                images:
+                  type: string
+                  format: binary
+      required: true
+      responses:
+        201:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
+    patch:
+      tags: 
+        - Admin
+      summary: Edit product templates
+      operationId: editProductTemplate
+      requestBody:
+        description: Used by admins to edit product templates 
+        content:
+         application/json:
+            schema:
+              required:
+                - product_template_id 
+                - name
+                - description
+                - product_category_id
+                - standard_quantity_selling
+                - mrp 
+                - tags
+              type: object
+              properties: 
+                name:
+                  type: string
+                  example: Roadster Tshirt
+                description:
+                  type: string
+                  example: Roadster Tshirt for men
+                brand:
+                  type: string
+                  example: Roadster
+                product_category_id:
+                  type: integer
+                  example: 1
+                standard_quantity_selling:
+                  type: integer
+                  example: 1
+                mrp:
+                  type: float
+                  example: 499.0
+                tags:
+                  type: string
+                  example: Roadster, Tshirt, Men's Tshirt
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /admins/productTemplateImage:
+    put:
+      tags: 
+        - Admin
+      summary: Add images in product templates
+      operationId: editProductTemplateImage
+      requestBody:
+        description: Used by admins to add product templates images
+        content:
+         multipart/form:
+            schema:
+              required:
+                - product_template_id 
+                - image
+              type: object
+              properties: 
+                product_template_id:
+                  type: integer
+                  example: 1
+                image:
+                  type: string
+                  format: binary
+      required: true
+      responses:
+        201:
+          description: Successfully Uploaded
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        406:
+          description: Maximum no. of photis reached
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags: 
+        - Admin
+      summary: Deletes images from product templates
+      operationId: deleteProductTemplateImage
+      requestBody:
+        description: Used by admins to delete product templates images
+        content:
+         application/json:
+            schema:
+              required:
+                - product_template_id 
+                - image_url
+              type: object
+              properties: 
+                product_template_id:
+                  type: integer
+                  example: 1
+                image_url:
+                  type: string
+                  example: image.jpeg
+      required: true
+      responses:
+        200:
+          description: Successfully Uploaded
+        401:
+          description: Unauthorized Access
+        404:
+          description: Not Found
+        406:
+          description: Maximum no. of photis reached
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
 components:
   schemas:
-    ProductRequest:
+    ProductEditRequest:
       required: 
         - name
         - description
-        - brand
         - product_category_id
         - standard_quantity_selling
         - mrp 
@@ -482,6 +1136,16 @@ components:
         tags:
           type: string
           example: Roadster, Tshirt, Men's Tshirt
+    ProductRequest:
+      allOf:  
+        - $ref: '#/components/schemas/ProductEditRequest'
+        - type: object
+          properties:
+            images:
+              type: array
+              items:
+                type: string
+                format: binary
     Vendor:
       required:
       - name
