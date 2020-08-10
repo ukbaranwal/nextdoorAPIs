@@ -13,7 +13,7 @@ const VendorType = sequelize.define('vendor_type', {
   selling: {type:Sequelize.BOOLEAN, defaultValue: false},
   delivery_boy_needed: Sequelize.BOOLEAN,
   store_needed: Sequelize.BOOLEAN,
-  image_url: Sequelize.STRING
+  image_url: Sequelize.TEXT
 });
 
 module.exports = VendorType;

@@ -33,6 +33,15 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join('images','vendors'));
+    },
+    filename: (req, file, cb) => {
+      cb(null, new Date().toISOString() + '-' + file.originalname);
+    }
+  });
+
 //file storage for product category
 const fileStorageProductCategory = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -53,6 +62,7 @@ const fileStorageProductTemplate = multer.diskStorage({
     }
 });
 
+const upload = multer({ storage: fileStorage, fileFilter: fileFilter });
 const uploadVendorType = multer({ storage: fileStorageVendorType, fileFilter: fileFilter });
 const uploadProductCategory = multer({ storage: fileStorageProductCategory, fileFilter: fileFilter });
 const uploadProductTemplate = multer({storage: fileStorageProductTemplate, fileFilter: fileFilter});
@@ -109,5 +119,11 @@ router.patch('/productTemplate', isRoot, adminController.patchProductTemplate);
 router.put('/productTemplateImage', isRoot, uploadProductTemplate.single('image'), adminController.putProductTemplateImage);
 
 router.delete('/productTemplateImage', isRoot, adminController.deleteProductTemplateImage);
+
+router.patch('/dashboard', isRoot, adminController.patchUpdateDashboard);
+
+router.patch('/dashboardLogo', isRoot, upload.single('image'), adminController.patchUpdateDashboardLogo);
+
+router.delete('/dashboardLogo', isRoot, adminController.deleteDashboardLogo);
 
 module.exports = router;

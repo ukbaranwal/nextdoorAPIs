@@ -14,7 +14,7 @@ const Vendor = sequelize.define('vendor', {
   shop_name: Sequelize.STRING,
   email: {type: Sequelize.STRING, allowNull: false},
   phone: {type: Sequelize.STRING, allowNull: false},
-  address: Sequelize.STRING,
+  address: Sequelize.TEXT,
   city: Sequelize.STRING,
   password: {type: Sequelize.STRING, allowNull: false},
   shop_open: {type: Sequelize.BOOLEAN, defaultValue: false},
@@ -22,6 +22,7 @@ const Vendor = sequelize.define('vendor', {
   no_of_ratings: {type: Sequelize.INTEGER, defaultValue: 0},
   rating: {type: Sequelize.FLOAT, defaultValue: 0},
   deleted: {type: Sequelize.BOOLEAN, defaultValue: false},
+  rating_stars: Sequelize.JSON, //{[1,3,8,9,10]}
   ban: {type: Sequelize.BOOLEAN, defaultValue: false},
   verified: {type: Sequelize.BOOLEAN, defaultValue: false},
   local_store: Sequelize.BOOLEAN,

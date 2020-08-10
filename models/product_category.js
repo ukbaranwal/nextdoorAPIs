@@ -13,7 +13,9 @@ const ProductCategory = sequelize.define('product_category', {
   tags: Sequelize.STRING,
   quantity_by_weight: {type:Sequelize.BOOLEAN, defaultValue: false},
   quantity_by_piece: {type:Sequelize.BOOLEAN, defaultValue: false},
-  image_url: Sequelize.STRING
+  image_url: Sequelize.TEXT,
+  have_color_variants: {type: Sequelize.BOOLEAN, defaultValue: false},
+  have_size_variants: {type: Sequelize.BOOLEAN, defaultValue:false }
 });
 
 module.exports = ProductCategory;

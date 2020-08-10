@@ -6,6 +6,7 @@ const VendorType = require('../models/vendor_type');
 const ProductCategory = require('../models/product_category');
 const fileHelper = require('../util/delete-file');
 const ProductTemplate = require('../models/product_template');
+const Vendor = require('../models/vendor');
 
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
@@ -317,7 +318,13 @@ exports.putProductCategory = (req, res, next) => {
     const quantity_by_weight = req.body.quantity_by_weight;
     const quantity_by_piece = req.body.quantity_by_piece;
     const image = req.file;
+    const vendor_type = req.vendor_type;
     if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!vendor_type) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
@@ -355,7 +362,7 @@ exports.putProductCategory = (req, res, next) => {
         if (productCategory) {
             return res.status(200).json({ message: 'Product Category already exist' });
         }
-        return ProductCategory.create({ name: name, parent_id: parent_id, tags: tags, quantity_by_piece: quantity_by_piece, quantity_by_weight: quantity_by_weight, image_url: image_url })
+        return ProductCategory.create({ name: name, parent_id: parent_id, tags: tags, quantity_by_piece: quantity_by_piece, quantity_by_weight: quantity_by_weight, image_url: image_url , vendor_type : vendor_type})
             .then(productCategory => {
                 res.status(201).json({ message: "Product Category added" });
             })
@@ -724,4 +731,116 @@ exports.putProductTemplateImage = (req, res, next) =>{
         }
         next(err);
     })
+};
+
+exports.patchUpdateDashboardLogo = (req, res, next) => {
+    const id = req.body.id;
+    const image = req.file;
+    if (!image) {
+        return res.status(422).json({ message: 'Attached file is not an Image' })
+    }
+    if (!id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const image_url = image.path;
+    Vendor.findOne({ where: { id: id } })
+        .then(vendor => {
+            if (vendor.image_url) {
+                fileHelper.deleteFile(vendor.image_url);
+            }
+            vendor.image_url = image_url;
+            return vendor.save();
+        })
+        .then(vendor => {
+            res.status(200).json({ message: 'Succesfully Uploaded' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
+exports.deleteDashboardLogo = (req, res, next) => {
+    const id = req.body.id;
+    Vendor.findOne({ where: { id: id } })
+        .then(vendor => {
+            if (!vendor.image_url) {
+                const error = new Error('No logo');
+                error.statusCode = 204;
+                throw error;
+            }
+            fileHelper.deleteFile(vendor.image_url);
+            vendor.image_url = null;
+            return vendor.save();
+        })
+        .then(vendor => {
+            res.status(200).json({ message: 'Succesfully Deleted' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
+exports.patchUpdateDashboard = (req, res, next) => {
+    const id =req.body.id;
+    const name = req.body.name;
+    const shop_name = req.body.shop_name;
+    const address = req.body.address;
+    const city = req.body.city;
+    const tags = req.body.tags;
+    if (!id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!shop_name) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!address) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!city) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!tags) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Vendor.findOne({ where: { id: id } })
+        .then(vendor => {
+            vendor.name = name;
+            vendor.shop_name = shop_name;
+            vendor.address = address;
+            vendor.city = city;
+            vendor.tags = tags;
+            return vendor.save();
+        })
+        .then(vendor => {
+            res.status(200).json({ message: 'Succesfully Updated' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
 };

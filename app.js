@@ -10,7 +10,7 @@ const sequelize = require('./util/database');
 
 //Routers
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
+const usersRouter = require('./routes/user');
 const vendorsRouter = require('./routes/vendor');
 const adminsRouter = require('./routes/admin');
 
@@ -19,6 +19,10 @@ const Product = require('./models/product');
 const Vendor = require('./models/vendor');
 const ProductCategory = require('./models/product_category');
 const ProductTemplate = require('./models/product_template');
+const Review = require('./models/review');
+const Order = require('./models/order');
+const User = require('./models/user');
+const VendorType = require('./models/vendor_type');
 
 ///Helper to delete files
 const fileHandler = require('./util/delete-file');
@@ -84,6 +88,15 @@ Product.belongsTo(Vendor, {foreignKey: 'vendor_id'});
 Vendor.hasMany(Product, {foreignKey: 'vendor_id'});
 //Product Template has a foreign key product_category_id
 ProductTemplate.belongsTo(ProductCategory, {foreignKey: 'product_category_id'});
+User.hasMany(Review, {foreignKey: 'user_id'});
+Review.belongsTo(User, {foreignKey: 'user_id'});
+Review.belongsTo(Vendor, {foreignKey: 'vendor_id'});
+
+User.hasMany(Order, {foreignKey: 'user_id'});
+Order.belongsTo(User, {foreignKey: 'user_id'});
+Order.belongsTo(Vendor, {foreignKey: 'vendor_id'});
+
+ProductCategory.belongsTo(VendorType, {foreignKey: 'vendor_type_id'});
 
 sequelize.
 //this is to drop and recreate tables

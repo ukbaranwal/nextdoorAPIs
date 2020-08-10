@@ -8,15 +8,6 @@ const multer = require('multer');
 const path = require('path');
 const isAllowed = require('../middlewares/is-allowed');
 
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join('images','vendors'));
-  },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + '-' + file.originalname);
-  }
-});
-
 const fileStorageProducts = multer.diskStorage({
   destination: (req, file, cb)=>{
     cb(null, path.join('images','products'));
@@ -38,7 +29,7 @@ const fileFilter = (req, file, cb) => {
   }
   };
 
-const upload = multer({ storage: fileStorage, fileFilter: fileFilter });
+
 const productUpload = multer({storage: fileStorageProducts, fileFilter: fileFilter});
 
 router.post('/signup',
@@ -95,24 +86,20 @@ router.patch('/forgotPassword',
   ],
   vendorController.putForgotPassword);
 
-router.patch('/status', isAuth, vendorController.putUpdateStatus);
-
-router.patch('/dashboard', isAuth, vendorController.putUpdateDashboard);
-
-router.patch('/dashboardLogo', isAuth, upload.single('image'), vendorController.putUpdateDashboardLogo);
-
-router.delete('/dashboardLogo', isAuth, vendorController.deleteDashboardLogo);
-
 router.patch('/changePassword', body('new_password')
   .trim()
   .isLength(min = 8)
-  .withMessage('New Password should be atleast 8 characters long'), isAuth, vendorController.putChangePassword);
+  .withMessage('New Password should be atleast 8 characters long'), isAuth, vendorController.patchChangePassword);
 
-router.patch('/shopTime', isAuth, vendorController.putUpdateTime);
+router.patch('/status', isAuth, vendorController.patchUpdateStatus);
 
-router.patch('/shopLocation', isAuth, vendorController.putUpdateLocation);
+router.patch('/shopTime', isAuth, vendorController.patchUpdateTime);
+
+router.patch('/shopLocation', isAuth, vendorController.patchUpdateLocation);
 
 router.put('/product', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
+
+router.put('/productThroughTemplate', isAuth, isAllowed, vendorController.putProductThroughTemplate);
 
 router.patch('/product', isAuth, isAllowed, vendorController.patchProduct);
 
@@ -123,5 +110,27 @@ router.patch('/productInStock', isAuth, isAllowed, vendorController.patchProduct
 router.put('/productImage', isAuth, isAllowed, productUpload.single('image'), vendorController.addProductImage);
 
 router.delete('/productImage', isAuth, isAllowed, vendorController.deleteProductImage);
+
+router.put('/productColor', isAuth, isAllowed, vendorController.putProductColor);
+
+router.patch('/productColor', isAuth, isAllowed, vendorController.patchProductColor);
+
+router.put('/productColorVariant', isAuth, isAllowed,productUpload.array('images', 4), vendorController.putProductColorVariant);
+
+router.patch('/productColorVariant', isAuth, isAllowed, vendorController.patchProductColorVariant);
+
+router.delete('/productColorVariant', isAuth, isAllowed, vendorController.deleteProductColorVariant);
+
+router.patch('/primaryProductColorVariant', isAuth, isAllowed, vendorController.patchPrimaryProductColorVariant);
+
+router.put('/relatedProducts', isAuth, isAllowed, vendorController.putRelatedProducts);
+
+router.put('/productSizeVariant', isAuth, isAllowed, vendorController.putProductSizeVariant);
+
+router.patch('/productSizeVariant', isAuth, isAllowed, vendorController.patchProductSizeVariant);
+
+router.delete('/productSizeVariant', isAuth, isAllowed, vendorController.deleteProductSizeVariant);
+
+router.patch('/productSizeVariantInStock', isAuth, isAllowed, vendorController.patchProductSizeVariantInStock);
 
 module.exports = router;

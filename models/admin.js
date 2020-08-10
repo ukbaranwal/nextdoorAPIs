@@ -13,7 +13,7 @@ const Admin = sequelize.define('admin', {
   phone: {type: Sequelize.STRING, allowNull: false},
   address: Sequelize.STRING,
   city: Sequelize.STRING,
-  image_url: Sequelize.STRING,
+  image_url: Sequelize.TEXT,
   password: {type: Sequelize.STRING, allowNull: false},
   root_access: {type: Sequelize.BOOLEAN, defaultValue: false},
   device_id: Sequelize.STRING

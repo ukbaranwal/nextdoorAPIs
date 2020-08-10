@@ -38,7 +38,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Vendor'
+              required:
+                - name
+                - email
+                - phone
+                - password
+                - city
+                - vendor_type
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: My Store
+                email:
+                  type: string
+                  example: mystore@gmail.com
+                city: 
+                  type: string
+                  example: Kalyani
+                phone:
+                  type: string
+                  example: 1234567890
+                password:
+                  type: string
+                  example: 123$%mystore
+                vendor_type:
+                  type: integer
+                  example: 1
         required: true
       responses:
         200:
@@ -402,14 +428,49 @@ paths:
         content:
           multipart/form-data:
             schema:
+              required: 
+                - name
+                - description
+                - product_category_id
+                - standard_quantity_selling
+                - mrp 
+                - discount_percentage
+                - max_quantity
+                - tags
               type: object
-              properties:
+              properties: 
+                name:
+                  type: string
+                  example: Roadster Tshirt
+                description:
+                  type: string
+                  example: Roadster Tshirt for men
+                brand:
+                  type: string
+                  example: Roadster
+                product_category_id:
+                  type: integer
+                  example: 1
+                standard_quantity_selling:
+                  type: integer
+                  example: 1
+                mrp:
+                  type: float
+                  example: 499.0
+                discount_percentage:
+                  type: integer
+                  example: 30
+                max_quantity:
+                  type: float
+                  example: 5
+                tags:
+                  type: string
+                  example: Roadster, Tshirt, Men's Tshirt
                 images:
                   type: array
                   items:
                     type: string
                     format: binary
-              $ref: '#/components/schemas/ProductRequest'
       required: true
       responses:
         201:
@@ -434,7 +495,48 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductEditRequest'
+              required: 
+                - product_id
+                - name
+                - description
+                - product_category_id
+                - standard_quantity_selling
+                - mrp 
+                - discount_percentage
+                - max_quantity
+                - tags
+              type: object
+              properties: 
+                product_id:
+                  type: integer
+                  example: 17
+                name:
+                  type: string
+                  example: Roadster Tshirt
+                description:
+                  type: string
+                  example: Roadster Tshirt for men
+                brand:
+                  type: string
+                  example: Roadster
+                product_category_id:
+                  type: integer
+                  example: 1
+                standard_quantity_selling:
+                  type: integer
+                  example: 1
+                mrp:
+                  type: float
+                  example: 499.0
+                discount_percentage:
+                  type: integer
+                  example: 30
+                max_quantity:
+                  type: float
+                  example: 5
+                tags:
+                  type: string
+                  example: Roadster, Tshirt, Men's Tshirt
       required: true
       responses:
         200:
@@ -470,6 +572,37 @@ paths:
       responses:
         200:
           description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error 
+  /vendors/productThroughTemplate:
+    put:
+      tags: 
+        - Vendor
+      summary: Adds a new product using template
+      operationId: addProductThroughTemplate
+      requestBody:
+        description: Used by vendors to add their products using templates
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_template_id:
+                  type: integer
+                  example: 1
+              $ref: '#/components/schemas/ProductRequest'
+      required: true
+      responses:
+        201:
+          description: Successfully Added
         401:
           description: Unauthorized Access
         403:
@@ -525,7 +658,7 @@ paths:
       requestBody:
         description: Used by vendors to update their products images
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required:
                 - product_id
@@ -572,7 +705,7 @@ paths:
                 product_id:
                   type: integer
                   example: 1
-                image:
+                image_url:
                   type: string
                   example: a.jpeg
       required: true
@@ -591,6 +724,450 @@ paths:
           description: Validation Failed
         500:
           description: Server Error
+  /vendors/productColor:
+    put:
+      tags:
+        - Vendor
+      summary: Used by vendors to add a color to a product
+      operationId: putProductColor
+      requestBody:
+        description: product_id and hex color
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - hex_color
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                hex_color:
+                  type: string
+                  example: FFFFFF
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        406:
+          description: Already exists
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    patch:
+      tags:
+        - Vendor
+      summary: Used by vendors to edit a color to a product
+      operationId: patchProductColor
+      requestBody:
+        description: product_id and hex color
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - hex_color
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                hex_color:
+                  type: string
+                  example: FFFFFF
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/productColorVariant:
+    put:
+      tags:
+        - Vendor
+      summary: Used by vendors to add a color variant of a product; creates a new product
+      operationId: putProductColorVariant
+      requestBody:
+        description: creates a new product
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - product_id
+                - hex_color
+                - mrp
+                - images
+                - discount_percentage
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                hex_color:
+                  type: string
+                  example: FFFFFF
+                mrp:
+                  type: float
+                  example: 999
+                discount_percentage:
+                  type: integer
+                  example: 30
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      required: true
+      responses:
+        201:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    patch:
+      tags:
+        - Vendor
+      summary: Used by vendors to edit a color variant of a product
+      operationId: patchProductColorVariant
+      requestBody:
+        description: product_id and hex color and variant_product_id
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - hex_color
+                - variant_product_id
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                hex_color:
+                  type: string
+                  example: FFFFFF
+                variant_product_id:
+                  type: integer
+                  example: 2
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags:
+        - Vendor
+      summary: Used by vendors to delete a color variant of a product
+      operationId: deleteProductColorVariant
+      requestBody:
+        description: removes variant from primary product and removes the color variant product
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - variant_product_id
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                variant_product_id:
+                  type: integer
+                  example: 2
+      required: true
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/primaryProductColorVariant:
+    patch:
+      tags:
+        - Vendor
+      summary: Used by vendors to set a primary color variant to a product
+      operationId: patchPrimaryProductColor
+      requestBody:
+        description: old and new primary product color variant
+        content:
+          application/json:
+            schema:
+              required:
+                - old_primary_product_id
+                - new_primary_product_id
+              type:
+                object
+              properties:
+                old_primary_product_id:
+                  type: integer
+                  example: 1
+                new_primary_product_id:
+                  type: integer
+                  example: 2
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/relatedProducts:
+    put:
+      tags:
+        - Vendor
+      summary: Used by vendors to add a list related product to a product
+      operationId: putRelatedProducts
+      requestBody:
+        description: product_id and array of product id
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - list_related_product_id
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                list_related_product_id:
+                  type: array
+                  example: [2,3,4]
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/productSizeVariant:
+    put:
+      tags:
+        - Vendor
+      summary: Used by vendors to add a size variant of a product; adds a json object
+      operationId: putProductSizeVariant
+      requestBody:
+        description: add a json object to product
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - size
+                - mrp
+                - discount_percentage
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                size:
+                  type: string
+                  example: XL
+                mrp:
+                  type: float
+                  example: 999
+                discount_percentage:
+                  type: integer
+                  example: 30
+      required: true
+      responses:
+        200:
+          description: Successfully Added
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        409:
+          description: Size Already exists
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    patch:
+      tags:
+        - Vendor
+      summary: Used by vendors to edit a size variant of a product
+      operationId: patchProductSizeVariant
+      requestBody:
+        description: edits the json object called size_variants
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - size
+                - mrp
+                - discount_percentage
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                size:
+                  type: string
+                  example: XXL
+                mrp:
+                  type: float
+                  example: 499
+                discount_percentage: 
+                  type: integer
+                  example: 30
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+    delete:
+      tags:
+        - Vendor
+      summary: Used by vendors to delete a size variant of a product
+      operationId: deleteProductSizeVariant
+      requestBody:
+        description: removes variant from json object of product
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - size
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                size:
+                  type: string
+                  example: XL
+      required: true
+      responses:
+        200:
+          description: Successfully Deleted
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /vendors/productSizeVariantInStock:
+    patch:
+      tags:
+        - Vendor
+      summary: Used by vendors to update in_stock of a size variant of a product
+      operationId: patchProductSizeVariantInStock
+      requestBody:
+        description: updates size variant's availability in json object of product
+        content:
+          application/json:
+            schema:
+              required:
+                - product_id
+                - size
+                - in_stock
+              type:
+                object
+              properties:
+                product_id:
+                  type: integer
+                  example: 1
+                size:
+                  type: string
+                  example: XL
+                in_stock:
+                  type: boolean
+                  example: true
+      required: true
+      responses:
+        200:
+          description: Successfully Updated
+        401:
+          description: Unauthorized Access
+        403:
+          description: Forbidden Access
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
   /admins/signup:
     post:
       tags:
@@ -602,7 +1179,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Vendor'
+              required:
+                - name
+                - email
+                - phone
+                - password
+                - city
+                - vendor_type
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: My Store
+                email:
+                  type: string
+                  example: mystore@gmail.com
+                city: 
+                  type: string
+                  example: Kalyani
+                phone:
+                  type: string
+                  example: 1234567890
+                password:
+                  type: string
+                  example: 123$%mystore
+                vendor_type:
+                  type: integer
+                  example: 1
+              
         required: true
       responses:
         200:
@@ -664,7 +1268,7 @@ paths:
       operationId: addVendorType
       requestBody:
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required: 
                 - name
@@ -715,7 +1319,7 @@ paths:
       requestBody:
         description: Used by admins to update vendor category
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required: 
                 - name
@@ -795,7 +1399,7 @@ paths:
       requestBody:
         description: Used by admins to create new product categories 
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required: 
                 - name
@@ -843,7 +1447,7 @@ paths:
       requestBody:
         description: Used by admins to edit product categories 
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required: 
                 - id
@@ -923,7 +1527,7 @@ paths:
       requestBody:
         description: Used by admins to create new product templates 
         content:
-          multipart/form:
+          multipart/form-data:
             schema:
               required: 
                 - name
@@ -1033,7 +1637,7 @@ paths:
       requestBody:
         description: Used by admins to add product templates images
         content:
-         multipart/form:
+         multipart/form-data:
             schema:
               required:
                 - product_template_id 
@@ -1091,6 +1695,94 @@ paths:
           description: Not Found
         406:
           description: Maximum no. of photis reached
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+  /users/signup:
+    post:
+      tags:
+      - User
+      summary: Signups a User
+      operationId: signupUser
+      requestBody:
+        description: User object that needs to be added
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+                - email
+                - phone
+                - password
+                - city
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Utkarsh
+                email:
+                  type: string
+                  example: myuser@gmail.com
+                city: 
+                  type: string
+                  example: Kalyani
+                phone:
+                  type: string
+                  example: 1234567890
+                password:
+                  type: string
+                  example: 123$%mystore
+        required: true
+      responses:
+        200:
+          description: User already Registered
+        201:
+          description: Signup was Successfull
+        404:
+          description: Not Found
+        422:
+          description: Validation Failed
+        500:
+          description: Server Error
+          content: {}
+  /users/signin:
+    post:
+      tags: 
+        - User
+      summary: Logins a User
+      operationId: loginUser
+      requestBody:
+        description: Email ID and Password of User
+        content:
+          application/json:
+            schema:
+              required: 
+                - email
+                - password
+              type: object
+              properties: 
+                email:
+                  type: string
+                  example: myuser@gmail.com
+                password:
+                  type: string
+                  example: 123$%mystore
+        required: true
+      responses:
+        202:
+          description: Login was Successfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: Successfull signin
+                  user: User Model
+        204:
+          description: User not found
+        404:
+          description: Not Found
         422:
           description: Validation Failed
         500:
