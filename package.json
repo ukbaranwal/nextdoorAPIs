@@ -2,14 +2,15 @@
   "name": "nextdoor",
   "version": "0.0.0",
   "private": true,
-  "engines":{
-    "node":"13.14.0"
+  "engines": {
+    "node": "13.14.0"
   },
   "scripts": {
     "start": "nodemon ./bin/www"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
+    "aws-sdk": "^2.729.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
