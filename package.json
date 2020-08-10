@@ -6,7 +6,7 @@
     "node": "13.14.0"
   },
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
