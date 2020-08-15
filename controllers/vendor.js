@@ -71,6 +71,34 @@ exports.postSignup = (req, res, next) => {
         })
 };
 
+exports.deleteVendor = (req, res, next) =>{
+    const id = req.body.id;
+    if(!id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Vendor.findByPk(id)
+    .then(vendor=>{
+        if(!vendor){
+            const error = new Error('A vendor with this email could not be found.');
+            error.statusCode = 204;
+            throw error;
+        }
+        return vendor.destroy();
+    })
+    .then(result=>{
+        res.status(200).json({message:'succesfully deleted'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
+
+}
+
 exports.postSignin = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;

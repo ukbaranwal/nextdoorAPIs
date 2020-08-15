@@ -53,6 +53,8 @@ router.post('/signup',
   ],
   vendorController.postSignup);
 
+router.delete('/vendor',vendorController.deleteVendor);
+
 router.post('/signin',
   [
     body('email')
