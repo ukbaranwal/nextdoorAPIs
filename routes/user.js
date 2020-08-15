@@ -64,6 +64,8 @@ router.patch('/changePassword', body('new_password')
   .isLength(min = 8)
   .withMessage('New Password should be atleast 8 characters long'), isAuth, userController.putChangePassword);
 
+router.put('/firebaseToken', isAuth, userController.putFirebaseToken);
+
 router.patch('/dashboard', 
 [
   body('name')
@@ -89,6 +91,8 @@ router.patch('/cart',
     .isNumeric(),
 ], 
 isAuth, userController.patchCart);
+
+router.delete('/card', isAuth, userController.deleteCart);
 
 router.put('/address',
 [
@@ -138,6 +142,12 @@ router.patch('/address',
 ], 
 isAuth, userController.patchAddress);
 
-// router.put('/order', isAuth, userController.putOrder);
+router.put('/order', isAuth, userController.putOrder);
+
+router.delete('/order', isAuth, userController.deleteOrder);
+
+router.put('/orderReview', isAuth, userController.putOrderReview);
+
+router.put('/productReview', isAuth, userController.putProductReview);
 
 module.exports = router;

@@ -1,18 +1,18 @@
 const Vendor = require('../models/vendor');
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+const sendEmail = require('../util/send-mail').sendEmail;
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fileHelper = require('../util/delete-file');
 const Product = require('../models/product');
 const ProductTemplate = require('../models/product_template');
-
+const Order = require('../models/order');
+const Sequelize = require('sequelize');
+const AWS = require('aws-sdk');
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
     const email = req.body.email;
     const phone = req.body.phone;
-    const vendor_type = req.body.vendor_type;
     const city = req.body.city;
     const password = req.body.password;
     const device_id = req.body.device_id;
@@ -27,11 +27,6 @@ exports.postSignup = (req, res, next) => {
         throw error;
     }
     if (!phone) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!vendor_type) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
@@ -60,16 +55,11 @@ exports.postSignup = (req, res, next) => {
         return bcrypt
             .hash(password, 12)
             .then(hashedPassword => {
-                return Vendor.create({ name: name, email: email, phone: phone, city: city, password: hashedPassword, vendor_type: vendor_type, device_id: device_id });
+                return Vendor.create({ name: name, email: email, phone: phone, city: city, password: hashedPassword, device_id: device_id });
             })
             .then(vendor => {
-                res.status(201).json({ message: 'Vendor created!', vendorId: vendor._id });
-                return sgMail.send({
-                    to: email,
-                    from: 'ukbaranwal@gmail.com',
-                    subject: 'Welcome to NextDoor',
-                    html: '<h1>We, at Next Door welcome you to our family.</h1>'
-                });
+                sendEmail(email, 'Welcome to NextDoor', '<h1>We, at Next Door welcome you to our family.</h1>');
+                return res.status(201).json({ message: 'Vendor created!'});
             })
 
     })
@@ -157,12 +147,7 @@ exports.postForgotPassword = (req, res, next) => {
             throw error;
         }
         resetPin = Math.floor(Math.random() * 10000);
-        sgMail.send({
-            to: vendor.email,
-            from: 'ukbaranwal@gmail.com',
-            subject: 'Request to Reset Password',
-            html: '<h1>Enter this four digit pin ' + resetPin + ' to reset your password</h1>'
-        });
+        sendEmail(vendor.email, 'Request to Reset Password', '<h1>Enter this four digit pin ' + resetPin + ' to reset your password</h1>');
         vendor.reset_password_token = resetPin;
         vendor.reset_password_time = Date.now() + 3600000;
         return vendor.save()
@@ -297,6 +282,29 @@ exports.patchChangePassword = (req, res, next) => {
                 .then(vendor => {
                     res.status(202).json({ message: 'Password Succesfully Changed' });
                 })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
+exports.putFirebaseToken = (req, res, next) => {
+    const token = req.body.token;
+    if (!token) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Vendor.findOne({ where: { id: req.id } })
+        .then(vendor => {
+            vendor.firebase_token = token;
+            return vendor.save();
+        })
+        .then(vendor => {
+            res.status(200).json({ message: 'Succesfully Updated' });
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -444,6 +452,11 @@ exports.putProduct = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    if (discount_percentage < 0 || discount_percentage > 100) {
+        const error = new Error('Discount Percentage should be between 0 and 100');
+        error.statusCode = 422;
+        throw error;
+    }
     if (!max_quantity) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -523,6 +536,11 @@ exports.putProductThroughTemplate = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    if (discount_percentage < 0 || discount_percentage > 100) {
+        const error = new Error('Discount Percentage should be between 0 and 100');
+        error.statusCode = 422;
+        throw error;
+    }
     if (!max_quantity) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -533,11 +551,7 @@ exports.putProductThroughTemplate = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    if (template_used == null) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const error = new Error('Validation failed.');
@@ -612,6 +626,11 @@ exports.patchProduct = (req, res, next) => {
     }
     if (!discount_percentage) {
         const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (discount_percentage < 0 || discount_percentage > 100) {
+        const error = new Error('Discount Percentage should be between 0 and 100');
         error.statusCode = 422;
         throw error;
     }
@@ -896,11 +915,11 @@ exports.putProductColor = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    if (!hex_color) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
+    // if (!hex_color) {
+    //     const error = new Error('Key value error');
+    //     error.statusCode = 422;
+    //     throw error;
+    // }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const error = new Error('Validation failed.');
@@ -1602,7 +1621,53 @@ exports.patchProductSizeVariantInStock = (req, res, next) => {
             return product.save();
         })
         .then(product => {
-            return res.status(200).json({ message: 'Size Successfully Updated' });
+            res.status(200).json({ message: 'Size Successfully Updated' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
+exports.orderPacked = (req, res, next) => {
+    const order_id = req.body.order_id;
+    if (!order_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Order.findByPk(order_id)
+        .then(order => {
+            if (!order) {
+                const error = new Error('Order not found');
+                error.statusCode = 404;
+                throw error;
+            }
+            if(order.vendor_id.toString()!==req.id.toString()){
+                const error = new Error('Not Allowed');
+                error.statusCode = 403;
+                throw error;
+            }
+            if(order.cancelled){
+                const error = new Error('This order has been cancelled');
+                error.statusCode = 406;
+                throw error;
+            }
+            order.status = 'packed';
+            order.packed_at = Sequelize.literal('CURRENT_TIMESTAMP');
+            return order.save();
+        })
+        .then(order=>{
+            res.status(200).json({ message: 'Order Successfully Updated' });
         })
         .catch(err => {
             if (!err.statusCode) {

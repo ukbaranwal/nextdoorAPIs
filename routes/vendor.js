@@ -9,8 +9,8 @@ const path = require('path');
 const isAllowed = require('../middlewares/is-allowed');
 
 const fileStorageProducts = multer.diskStorage({
-  destination: (req, file, cb)=>{
-    cb(null, path.join('images','products'));
+  destination: (req, file, cb) => {
+    cb(null, path.join('images', 'products'));
   },
   filename: (req, file, cb) => {
     cb(null, new Date().toISOString() + '-' + file.originalname);
@@ -19,18 +19,18 @@ const fileStorageProducts = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   if (
-      file.mimetype === 'image/png' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/jpeg'
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
   ) {
-      cb(null, true);
+    cb(null, true);
   } else {
-      cb(null, false);
+    cb(null, false);
   }
-  };
+};
 
 
-const productUpload = multer({storage: fileStorageProducts, fileFilter: fileFilter});
+const productUpload = multer({ storage: fileStorageProducts, fileFilter: fileFilter });
 
 router.post('/signup',
   [
@@ -91,13 +91,15 @@ router.patch('/changePassword', body('new_password')
   .isLength(min = 8)
   .withMessage('New Password should be atleast 8 characters long'), isAuth, vendorController.patchChangePassword);
 
+router.put('/firebaseToken', isAuth, vendorController.putFirebaseToken);
+
 router.patch('/status', isAuth, vendorController.patchUpdateStatus);
 
 router.patch('/shopTime', isAuth, vendorController.patchUpdateTime);
 
 router.patch('/shopLocation', isAuth, vendorController.patchUpdateLocation);
 
-router.put('/product', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
+router.put('/product',isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
 
 router.put('/productThroughTemplate', isAuth, isAllowed, vendorController.putProductThroughTemplate);
 
@@ -111,11 +113,11 @@ router.put('/productImage', isAuth, isAllowed, productUpload.single('image'), ve
 
 router.delete('/productImage', isAuth, isAllowed, vendorController.deleteProductImage);
 
-router.put('/productColor', isAuth, isAllowed, vendorController.putProductColor);
+router.put('/productColor',[body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.putProductColor);
 
-router.patch('/productColor', isAuth, isAllowed, vendorController.patchProductColor);
+router.patch('/productColor',[body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.patchProductColor);
 
-router.put('/productColorVariant', isAuth, isAllowed,productUpload.array('images', 4), vendorController.putProductColorVariant);
+router.put('/productColorVariant', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProductColorVariant);
 
 router.patch('/productColorVariant', isAuth, isAllowed, vendorController.patchProductColorVariant);
 
@@ -132,5 +134,7 @@ router.patch('/productSizeVariant', isAuth, isAllowed, vendorController.patchPro
 router.delete('/productSizeVariant', isAuth, isAllowed, vendorController.deleteProductSizeVariant);
 
 router.patch('/productSizeVariantInStock', isAuth, isAllowed, vendorController.patchProductSizeVariantInStock);
+
+router.patch('/orderPacked', isAuth, vendorController.orderPacked);
 
 module.exports = router;

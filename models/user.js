@@ -22,7 +22,8 @@ const User = sequelize.define('user', {
   address: Sequelize.JSON,//{"id":1, "name":"Utkarsh Baranwal", "address":"B14/418", "postcode":241235, "city":"Kalyani", "Landmark":"Near Penguin Park", "contact":7355972739}
   wallet_balance: {type:Sequelize.FLOAT, defaultValue:0},
   cart: {type:Sequelize.JSON, defaultValue:[]},//{product_id:1, quantity:2}
-  device_id: Sequelize.STRING
+  device_id: Sequelize.STRING,
+  firebase_token: Sequelize.STRING
 });
 
 module.exports = User;

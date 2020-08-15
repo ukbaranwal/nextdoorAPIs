@@ -25,14 +25,17 @@ const Order = sequelize.define('order', {
   delivery_tip: Sequelize.DOUBLE,
   instructions: Sequelize.TEXT,
   status: {type: Sequelize.STRING, allowNull: false},
+  cancelled: {type: Sequelize.BOOLEAN, defaultValue: false},
   review: Sequelize.TEXT,
   rating: Sequelize.FLOAT,
+  product_review: Sequelize.JSON,
   delivery_review: Sequelize.TEXT,
   delivery_rating: Sequelize.FLOAT,
   address: {type: Sequelize.JSON, allowNull:false},
   packed_at: Sequelize.DATE,
   shipped_at: Sequelize.DATE,
   delivered_at: Sequelize.DATE,
+  expected_delivery_at: Sequelize.DATE,
   products: {type: Sequelize.JSON, allowNull: false}//[{product_id:1, product_name:"Roadster Tshirt", product_brand:"Roadster", amount:999, discount_applied: 199, quantity:2, image:"a.jpg",}]
 });
 

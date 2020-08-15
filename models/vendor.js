@@ -22,7 +22,7 @@ const Vendor = sequelize.define('vendor', {
   no_of_ratings: {type: Sequelize.INTEGER, defaultValue: 0},
   rating: {type: Sequelize.FLOAT, defaultValue: 0},
   deleted: {type: Sequelize.BOOLEAN, defaultValue: false},
-  rating_stars: Sequelize.JSON, //{[1,3,8,9,10]}
+  rating_stars: {type: Sequelize.JSON, defaultValue:[0,0,0,0,0]}, //[1,3,8,9,10]
   ban: {type: Sequelize.BOOLEAN, defaultValue: false},
   verified: {type: Sequelize.BOOLEAN, defaultValue: false},
   local_store: Sequelize.BOOLEAN,
@@ -39,7 +39,8 @@ const Vendor = sequelize.define('vendor', {
   reset_password_time: Sequelize.DATE,
   opening_time: Sequelize.STRING,
   closing_time: Sequelize.STRING,
-  device_id: Sequelize.STRING
+  device_id: Sequelize.STRING,
+  firebase_token: Sequelize.STRING
 });
 
 module.exports = Vendor;

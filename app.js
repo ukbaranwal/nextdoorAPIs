@@ -7,6 +7,8 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const swaggerDocument = YAML.load('./swagger.yaml');
 const sequelize = require('./util/database');
+const firebaseAdmin = require('./util/send_push_notifications');
+
 
 //Routers
 const indexRouter = require('./routes/index');
@@ -19,7 +21,6 @@ const Product = require('./models/product');
 const Vendor = require('./models/vendor');
 const ProductCategory = require('./models/product_category');
 const ProductTemplate = require('./models/product_template');
-const Review = require('./models/review');
 const Order = require('./models/order');
 const User = require('./models/user');
 const VendorType = require('./models/vendor_type');
@@ -78,6 +79,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
+firebaseAdmin.initializeFirebaseApp();
 
 //Associations
 //Product has a foreign key product_category_id
@@ -88,9 +90,6 @@ Product.belongsTo(Vendor, {foreignKey: 'vendor_id'});
 Vendor.hasMany(Product, {foreignKey: 'vendor_id'});
 //Product Template has a foreign key product_category_id
 ProductTemplate.belongsTo(ProductCategory, {foreignKey: 'product_category_id'});
-User.hasMany(Review, {foreignKey: 'user_id'});
-Review.belongsTo(User, {foreignKey: 'user_id'});
-Review.belongsTo(Vendor, {foreignKey: 'vendor_id'});
 
 User.hasMany(Order, {foreignKey: 'user_id'});
 Order.belongsTo(User, {foreignKey: 'user_id'});
