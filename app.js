@@ -99,11 +99,11 @@ ProductCategory.belongsTo(VendorType, {foreignKey: 'vendor_type_id'});
 
 sequelize.
 //this is to drop and recreate tables
-  sync({force: true})
+  // sync({force: true})
   //this is to update some parts of tables
   // sync({alter: true})
   //for normal uses
-  // sync()
+  sync()
   .then(result => {
     console.log('Database Connected');
   }).catch(err => {

@@ -5,9 +5,9 @@ const Sequelize = require('sequelize');
 //   host: 'localhost',
 // });
 
-const sequelize = new Sequelize(process.env.RDS_DB_NAME, process.env.RDS_USERNAME, process.env.RDS_PASSWORD, {
+const sequelize = new Sequelize(process.env.RDS_DB_NAME||'nextdoor', process.env.RDS_USERNAME||'postgres', process.env.RDS_PASSWORD||'postgres', {
   dialect: 'postgres',
-  host: process.env.RDS_HOSTNAME,
+  host: process.env.RDS_HOSTNAME||'localhost',
   port: process.env.RDS_PORT,
 });
 

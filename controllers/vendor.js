@@ -142,7 +142,7 @@ exports.postSignin = (req, res, next) => {
                     'somesupersecretsecret',
                 );
                 loadedVendor.password = null;
-                res.status(202).json({ token: 'Bearer ' + token, vendor: loadedVendor });
+                res.status(202).json({ message: 'You have successfully signed in', data:{token: 'Bearer ' + token, vendor: loadedVendor}});
             })
     })
         .catch(err => {
