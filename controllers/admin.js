@@ -60,7 +60,7 @@ exports.postSignup = (req, res, next) => {
         return bcrypt
             .hash(password, 12)
             .then(hashedPassword => {
-                return Admin.create({ name: name, email: email, phone: phone, city: city, password: hashedPassword, address: address, device_id: device_id });
+                return Admin.create({ name: name, email: email, phone: phone, city: city, password: hashedPassword, address: address, device_id: device_id, root_access:true });
             })
             .then(admin => {
                 return res.status(201).json({ message: 'Admin created!' });
