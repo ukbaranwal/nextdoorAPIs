@@ -211,10 +211,12 @@ exports.patchVerifyVendor = (req, res, next) =>{
             error.statusCode = 404;
             throw error;
         }
-        vendor.verifed = true;
+        console.log(vendor.verified);
+        vendor.verified = true;
         return vendor.save();
     })
     .then(vendor=>{
+        console.log(vendor);
         res.status(200).json({message: "Successfully Verified"});
     })
     .catch(err => {
