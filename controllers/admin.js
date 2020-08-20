@@ -349,22 +349,26 @@ exports.putProductCategory = (req, res, next) => {
     const quantity_by_piece = req.body.quantity_by_piece;
     const image = req.file;
     const no_of_photos = req.body.no_of_photos;
-    const vendor_type = req.vendor_type;
+    const vendor_type = req.body.vendor_type;
+    console.log(1);
     if (!name) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
     }
+    console.log(2);
     if (!vendor_type) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
     }
+    console.log(3);
     if (quantity_by_weight == null) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
     }
+    
     if (quantity_by_piece == null) {
         const error = new Error('Key value error');
         error.statusCode = 422;
