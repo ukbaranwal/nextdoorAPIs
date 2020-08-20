@@ -197,6 +197,34 @@ exports.putVendorType = (req, res, next) => {
         });
 };
 
+exports.patchVerifyVendor = (req, res, next) =>{
+    const vendor_id = req.body.vendor_id;
+    if(!vendor_id){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Vendor.findByPk(vendor_id)
+    .then(vendor => {
+        if(!vendor){
+            const error = new Error('Vendor not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        vendor.verifed = true;
+        return vendor.save();
+    })
+    .then(vendor=>{
+        res.status(200).json({message: "Successfully Verified"});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
+};
+
 exports.patchVendorType = (req, res, next) => {
     const id = req.body.id;
     const name = req.body.name;
@@ -314,10 +342,11 @@ exports.deleteVendorType = (req, res, next) => {
 exports.putProductCategory = (req, res, next) => {
     const name = req.body.name;
     let parent_id = req.body.parent_id;
-    const tags = req.body.selling;
+    const tags = req.body.tags;
     const quantity_by_weight = req.body.quantity_by_weight;
     const quantity_by_piece = req.body.quantity_by_piece;
     const image = req.file;
+    const no_of_photos = req.body.no_of_photos;
     const vendor_type = req.vendor_type;
     if (!name) {
         const error = new Error('Key value error');
@@ -344,6 +373,11 @@ exports.putProductCategory = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    if (!no_of_photos) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
     if (!parent_id) {
         parent_id = 0;
     }
@@ -362,7 +396,7 @@ exports.putProductCategory = (req, res, next) => {
         if (productCategory) {
             return res.status(200).json({ message: 'Product Category already exist' });
         }
-        return ProductCategory.create({ name: name, parent_id: parent_id, tags: tags, quantity_by_piece: quantity_by_piece, quantity_by_weight: quantity_by_weight, image_url: image_url , vendor_type : vendor_type})
+        return ProductCategory.create({ name: name, parent_id: parent_id, tags: tags, quantity_by_piece: quantity_by_piece, quantity_by_weight: quantity_by_weight, image_url: image_url , vendor_type_id : vendor_type, no_of_photos:no_of_photos})
             .then(productCategory => {
                 res.status(201).json({ message: "Product Category added" });
             })
@@ -378,9 +412,10 @@ exports.putProductCategory = (req, res, next) => {
 exports.patchProductCategory = (req, res, next) => {
     const id = req.body.id;
     const name = req.body.name;
-    const tags = req.body.selling;
+    const tags = req.body.tags;
     const quantity_by_weight = req.body.quantity_by_weight;
     const quantity_by_piece = req.body.quantity_by_piece;
+    const no_of_photos = req.body.no_of_photos;
     const image = req.file;
     if (!name) {
         const error = new Error('Key value error');
@@ -399,6 +434,11 @@ exports.patchProductCategory = (req, res, next) => {
     }
     if (quantity_by_piece == quantity_by_weight) {
         const error = new Error('Selling quantity should either be piece or weight');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!no_of_photos) {
+        const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
     }
@@ -423,6 +463,7 @@ exports.patchProductCategory = (req, res, next) => {
         productCategory.quantity_by_piece = quantity_by_piece;
         productCategory.quantity_by_weight = quantity_by_weight;
         productCategory.tags = tags;
+        productCategory.no_of_photos = no_of_photos;
         if (productCategory.image_url && image) {
             fileHelper.deleteFile(productCategory.image_url);
             productCategory.image_url = image_url;

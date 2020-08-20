@@ -139,4 +139,6 @@ router.patch('/productSizeVariantInStock', isAuth, isAllowed, vendorController.p
 
 router.patch('/orderPacked', isAuth, vendorController.orderPacked);
 
+router.get('/productCategory', isAuth,vendorController.getProductCategories );
+
 module.exports = router;

@@ -100,6 +100,8 @@ router.post('/signin',
     ],
     adminController.postSignin);
 
+router.patch('/vendorVerify', isRoot, adminController.patchVerifyVendor);
+
 router.put('/vendorType', isRoot, uploadVendorType.single('image'), adminController.putVendorType);
 
 router.patch('/vendorType', isRoot, uploadVendorType.single('image'), adminController.patchVendorType);

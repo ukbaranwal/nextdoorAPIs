@@ -9,6 +9,7 @@ const ProductTemplate = require('../models/product_template');
 const Order = require('../models/order');
 const Sequelize = require('sequelize');
 const AWS = require('aws-sdk');
+const ProductCategory = require('../models/product_category');
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
     const email = req.body.email;
@@ -59,7 +60,7 @@ exports.postSignup = (req, res, next) => {
             })
             .then(vendor => {
                 sendEmail(email, 'Welcome to NextDoor', '<h1>We, at Next Door welcome you to our family.</h1>');
-                return res.status(201).json({ message: 'Vendor created!'});
+                return res.status(201).json({ message: 'Successfully signed up, please login for proceed'});
             })
 
     })
@@ -1704,3 +1705,34 @@ exports.orderPacked = (req, res, next) => {
             next(err);
         });
 };
+
+exports.getProductCategories = (req,res,next) =>{
+    const vendor_type =  req.query.vendor_type;
+    if(!vendor_type){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    ProductCategory.findAll({where:{vendor_type_id: vendor_type}})
+    .then(productCategories=>{
+        if(!productCategories){
+            const error = new Error('No Categories Found');
+            error.statusCode = 404;
+            throw error;
+        }
+        res.status(200).json({message:'Successfully Fetched', data:{product_categories:productCategories}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
+}
