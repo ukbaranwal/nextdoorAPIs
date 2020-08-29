@@ -75,7 +75,7 @@ router.post('/forgotPassword',
     .normalizeEmail(),
   vendorController.postForgotPassword);
 
-router.patch('/forgotPassword',
+router.put('/forgotPassword',
   [
     body('email')
       .isEmail()
@@ -100,6 +100,8 @@ router.patch('/status', isAuth, vendorController.patchUpdateStatus);
 router.patch('/shopTime', isAuth, vendorController.patchUpdateTime);
 
 router.patch('/shopLocation', isAuth, vendorController.patchUpdateLocation);
+
+router.get('/products', isAuth, isAllowed, vendorController.getProducts);
 
 router.put('/product',isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
 

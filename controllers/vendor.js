@@ -228,17 +228,17 @@ exports.putForgotPassword = (req, res, next) => {
         }
         if (!vendor.reset_password_token) {
             const error = new Error('Please request a new pin to change your password');
-            error.statusCode = 401;
+            error.statusCode = 406;
             throw error;
         }
         if (vendor.reset_password_token.toString() !== resetPin.toString()) {
             const error = new Error('Enter Correct Pin to reset your password');
-            error.statusCode = 401;
+            error.statusCode = 406;
             throw error;
         }
         if (vendor.reset_password_time < Date.now()) {
             const error = new Error('This pin has expired, please request for new one');
-            error.statusCode = 401;
+            error.statusCode = 406;
             throw error;
         }
         bcrypt
@@ -436,6 +436,20 @@ exports.patchUpdateLocation = (req, res, next) => {
         });
 };
 
+exports.getProducts = (req, res, next) =>{
+    Product.findAll({where:{vendor_id:req.id}})
+    .then(products=>{
+        console.log(products);
+        res.status(200).json({message:'Successfully Fetched', data:{products:products}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
+};
+
 exports.putProduct = (req, res, next) => {
     const name = req.body.name;
     const description = req.body.description;
@@ -449,7 +463,7 @@ exports.putProduct = (req, res, next) => {
     // const existing_product_id = req.body.existing_product_id;
     //TODO: Manage existing products
     const images = req.files;
-
+    console.log(images);
     if (!name) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -496,6 +510,11 @@ exports.putProduct = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    if (images.length==0) {
+        const error = new Error('Choose an Image');
+        error.statusCode = 422;
+        throw error;
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const error = new Error('Validation failed.');
@@ -505,14 +524,14 @@ exports.putProduct = (req, res, next) => {
     }
     var images_json = [];
     ///Todo: Product category check if image required
-    if (images) {
-        for (var i = 0; i < images.length; i++) {
-            images_json.push({ "image_url": images[i].path })
-        }
+    for (var i = 0; i < images.length; i++) {
+        images_json.push({ "image_url": images[i].path })
     }
+    console.log(images_json);
+
     req.vendor.createProduct({ name: name, description: description, standard_quantity_selling: standard_quantity_selling, mrp: mrp, discount_percentage: discount_percentage, max_quantity: max_quantity, tags: tags, product_category_id: product_category_id, brand: brand, images: images_json })
         .then(product => {
-            return res.status(201).json({ message: 'Congrats, You have successfully added your product' });
+            return res.status(201).json({ message: 'Congrats, You have successfully added your product', data:{product_id:product.id, images:product.images} });
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -771,7 +790,6 @@ exports.deleteProduct = (req, res, next) => {
 exports.patchProductInStock = (req, res, next) => {
     const product_id = req.body.product_id;
     const in_stock = req.body.in_stock;
-
     if (!product_id) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -816,8 +834,8 @@ exports.patchProductInStock = (req, res, next) => {
 };
 
 exports.deleteProductImage = (req, res, next) => {
-    const image_url = req.body.image_url;
-    const product_id = req.body.product_id;
+    const image_url = req.query.image_url;
+    const product_id = req.query.product_id;
     if (!image_url) {
         const error = new Error('Key value error');
         error.statusCode = 422;

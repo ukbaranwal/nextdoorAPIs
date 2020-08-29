@@ -18,7 +18,8 @@ exports.sendPushNotification = (registrationToken, title, body, image, data) => 
         android: {
             ttl: 360 * 1000,
             notification: {
-                image: image
+                image: image,
+                clickAction: 'FLUTTER_NOTIFICATION_CLICK',
             },
         },
         apns: {

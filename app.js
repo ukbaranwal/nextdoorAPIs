@@ -81,6 +81,8 @@ app.use((err, req, res, next) => {
 
 firebaseAdmin.initializeFirebaseApp();
 
+firebaseAdmin.sendPushNotification('cMmphpoxTjizgqORaNDdcf:APA91bGOaGbIM0OljybaRB40YOJ5hORLY65Fdq1eqVP9kA1HB4H8yrgx1lpB4P5XqO3UQxZP4BcHf-B6sbNl3kViK3Q922XfbkabWjmtvbtrLp3tQKLDMaG_lOgIxV-PAvbOx7oNTW71', "Hey it Works", "yeuppp");
+
 //Associations
 //Product has a foreign key product_category_id
 Product.belongsTo(ProductCategory, {foreignKey: 'product_category_id'});
@@ -101,9 +103,9 @@ sequelize.
 //this is to drop and recreate tables
   // sync({force: true})
   //this is to update some parts of tables
-  sync({alter: true})
+  // sync({alter: true})
   //for normal uses
-  // sync()
+  sync()
   .then(result => {
     console.log('Database Connected');
   }).catch(err => {
