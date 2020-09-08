@@ -24,7 +24,7 @@ const Order = sequelize.define('order', {
   transaction_id: Sequelize.STRING,
   delivery_tip: Sequelize.DOUBLE,
   instructions: Sequelize.TEXT,
-  status: {type: Sequelize.STRING, allowNull: false},
+  status: {type: Sequelize.STRING, allowNull: false},//pending,accepted,shipped,delivered
   cancelled: {type: Sequelize.BOOLEAN, defaultValue: false},
   review: Sequelize.TEXT,
   rating: Sequelize.FLOAT,

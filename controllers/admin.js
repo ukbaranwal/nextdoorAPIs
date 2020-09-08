@@ -168,8 +168,9 @@ exports.putVendorType = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    if (!image) {
-        return res.status(422).json({ message: 'Attached file is not an Image' })
+    let image_url;
+    if (image) {
+        image_url = image.path;
     }
 
     const errors = validationResult(req);
@@ -179,7 +180,6 @@ exports.putVendorType = (req, res, next) => {
         error.data = errors.array();
         throw error;
     }
-    const image_url = image.path;
     VendorType.findOne({ where: { name: name } }).then(vendorType => {
         if (vendorType) {
             return res.status(200).json({ message: 'Category already exist' });

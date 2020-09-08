@@ -24,6 +24,7 @@ const ProductTemplate = require('./models/product_template');
 const Order = require('./models/order');
 const User = require('./models/user');
 const VendorType = require('./models/vendor_type');
+const Notification = require('./models/notification');
 
 ///Helper to delete files
 const fileHandler = require('./util/delete-file');
@@ -81,7 +82,7 @@ app.use((err, req, res, next) => {
 
 firebaseAdmin.initializeFirebaseApp();
 
-firebaseAdmin.sendPushNotification('cMmphpoxTjizgqORaNDdcf:APA91bGOaGbIM0OljybaRB40YOJ5hORLY65Fdq1eqVP9kA1HB4H8yrgx1lpB4P5XqO3UQxZP4BcHf-B6sbNl3kViK3Q922XfbkabWjmtvbtrLp3tQKLDMaG_lOgIxV-PAvbOx7oNTW71', "Hey it Works", "yeuppp");
+// firebaseAdmin.sendPushNotification('cMmphpoxTjizgqORaNDdcf:APA91bGOaGbIM0OljybaRB40YOJ5hORLY65Fdq1eqVP9kA1HB4H8yrgx1lpB4P5XqO3UQxZP4BcHf-B6sbNl3kViK3Q922XfbkabWjmtvbtrLp3tQKLDMaG_lOgIxV-PAvbOx7oNTW71', "Hey it Works", "yeuppp");
 
 //Associations
 //Product has a foreign key product_category_id
@@ -98,6 +99,8 @@ Order.belongsTo(User, {foreignKey: 'user_id'});
 Order.belongsTo(Vendor, {foreignKey: 'vendor_id'});
 
 ProductCategory.belongsTo(VendorType, {foreignKey: 'vendor_type_id'});
+
+Vendor.hasMany(Notification, {foreignKey: 'vendor_id'});
 
 sequelize.
 //this is to drop and recreate tables

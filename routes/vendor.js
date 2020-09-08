@@ -141,6 +141,14 @@ router.patch('/productSizeVariantInStock', isAuth, isAllowed, vendorController.p
 
 router.patch('/orderPacked', isAuth, vendorController.orderPacked);
 
-router.get('/productCategory', isAuth,vendorController.getProductCategories );
+router.get('/productCategory', vendorController.getProductCategories);
+
+router.get('/dashboard', isAuth, isAllowed, vendorController.getDashboard);
+
+router.get('/dashboardRevenue', isAuth, isAllowed, vendorController.getOrderRevenueDashboard);
+
+router.get('/orders', isAuth, isAllowed, vendorController.getOrders);
+
+router.get('/reviews', isAuth, isAllowed, vendorController.getReviews);
 
 module.exports = router;
