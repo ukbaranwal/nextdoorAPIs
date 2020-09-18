@@ -10,7 +10,30 @@ const Order = require('../models/order');
 const Sequelize = require('sequelize');
 const AWS = require('aws-sdk');
 const ProductCategory = require('../models/product_category');
-const { off } = require('../app');
+const FirebaseToken = require('../models/firebase_token');
+const Notification = require('../models/notification');
+const fs = require('fs');
+const Coupon = require('../models/coupon');
+
+exports.putFirebaseTokenUnregistered = (req, res, next) => {
+    const token = req.body.token;
+    const device_id = req.body.device_id;
+    if (!token) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    FirebaseToken.create({device_id:device_id, firebase_token: token})
+    .then(firebaseToken=>{
+        res.status(200).json({ message: 'Succesfully Updated' });
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
+};
 exports.postSignup = (req, res, next) => {
     const name = req.body.name;
     const email = req.body.email;
@@ -330,6 +353,9 @@ exports.putFirebaseToken = (req, res, next) => {
     }
     Vendor.findOne({ where: { id: req.id } })
         .then(vendor => {
+            if(token===vendor.firebase_token){
+                return res.status(208).json({ message: 'Already Updated' });
+            }
             vendor.firebase_token = token;
             return vendor.save();
         })
@@ -435,15 +461,51 @@ exports.patchUpdateLocation = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
     const offset = req.query.offset;
     const search = req.query.search;
-    let where;
+    const order_by = req.query.order_by;
+    let where; 
+    let order;
     if(search){
-        where= { vendor_id: req.id , name: {[Sequelize.Op.iLike] : '%'+search+'%'}};
+        where= Sequelize.and({vendor_id: req.id}, Sequelize.or({name: {[Sequelize.Op.iLike] : '%'+search+'%'}}, {brand:{[Sequelize.Op.iLike] : '%'+search+'%'}}));
     }else{
         where= {vendor_id: req.id};
     }
-    Product.findAll({ where: where, offset: offset, limit: 10, order: [['createdAt', 'DESC']], })
+    if(!order_by){
+        order = 'createdAt';
+    }else{
+        order = order_by;
+    }
+    Product.findAll({ where: where, offset: offset, limit: 10, order: [[order, 'DESC']], })
         .then(products => {
             res.status(200).json({ message: 'Successfully Fetched', data: { products: products } });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+};
+
+exports.getProductTemplates = (req, res, next) => {
+    const offset = req.query.offset;
+    const search = req.query.search;
+    const order_by = req.query.order_by;
+    const product_category_id = req.query.product_category_id;
+    let where; 
+    let order;
+    if(search){
+        where= Sequelize.and({product_category_id: product_category_id}, Sequelize.or({name: {[Sequelize.Op.iLike] : '%'+search+'%'}}, {brand:{[Sequelize.Op.iLike] : '%'+search+'%'}}));
+    }else{
+        where= {product_category_id: product_category_id};
+    }
+    if(!order_by){
+        order = 'createdAt';
+    }else{
+        order = order_by;
+    }
+    ProductTemplate.findAll({ where: where, offset: offset, limit: 10, order: [[order, 'DESC']], })
+        .then(product_templates => {
+            res.status(200).json({ message: 'Successfully Fetched', data: { product_templates: product_templates } });
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -533,95 +595,6 @@ exports.putProduct = (req, res, next) => {
     console.log(images_json);
 
     req.vendor.createProduct({ name: name, description: description, standard_quantity_selling: standard_quantity_selling, mrp: mrp, discount_percentage: discount_percentage, max_quantity: max_quantity, tags: tags, product_category_id: product_category_id, brand: brand, images: images_json })
-        .then(product => {
-            return res.status(201).json({ message: 'Congrats, You have successfully added your product' });
-        })
-        .catch(err => {
-            if (!err.statusCode) {
-                err.statusCode = 500;
-            }
-            next(err);
-        })
-};
-
-exports.putProductThroughTemplate = (req, res, next) => {
-    const name = req.body.name;
-    const description = req.body.description;
-    const brand = req.body.brand;
-    const product_category_id = req.body.product_category_id;
-    const standard_quantity_selling = req.body.standard_quantity_selling;
-    const mrp = req.body.mrp;
-    const discount_percentage = req.body.discount_percentage;
-    const max_quantity = req.body.max_quantity;
-    const tags = req.body.tags;
-    const product_template_id = req.body.product_template_id;
-
-    if (!name) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!description) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!product_category_id) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-
-    if (!standard_quantity_selling) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!mrp) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!discount_percentage) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (discount_percentage < 0 || discount_percentage > 100) {
-        const error = new Error('Discount Percentage should be between 0 and 100');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!max_quantity) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-    if (!tags) {
-        const error = new Error('Key value error');
-        error.statusCode = 422;
-        throw error;
-    }
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        const error = new Error('Validation failed.');
-        error.statusCode = 422;
-        error.data = errors.array();
-        throw error;
-    }
-    ProductTemplate.findByPk(product_template_id)
-        .then(productTemplate => {
-            if (!productTemplate) {
-                const error = new Error('Template not found.');
-                error.statusCode = 404;
-                throw error;
-            }
-            return productTemplate;
-        })
-        .then(productTemplate => {
-            return req.vendor.createProduct({ name: name, description: description, standard_quantity_selling: standard_quantity_selling, mrp: mrp, discount_percentage: discount_percentage, max_quantity: max_quantity, tags: tags, product_category_id: product_category_id, brand: brand, images: productTemplate.images, template_used: true })
-        })
         .then(product => {
             return res.status(201).json({ message: 'Congrats, You have successfully added your product' });
         })
@@ -767,11 +740,6 @@ exports.deleteProduct = (req, res, next) => {
                 error.statusCode = 412;
                 throw error;
             }
-            if (product.template_used) {
-                product.deleted = true;
-                product.images = null;
-                return product.save();
-            }
             for (var i = 0; i < product.images.length; i++) {
                 fileHelper.deleteFile(product.images[i].image_url);
             }
@@ -872,9 +840,7 @@ exports.deleteProductImage = (req, res, next) => {
             var flag = false;
             for (var i = 0; i < product.images.length; i++) {
                 if (product.images[i].image_url === image_url) {
-                    if (!product.template_used) {
-                        fileHelper.deleteFile(image_url);
-                    }
+                    fileHelper.deleteFile(image_url);
                     flag = true;
                 }
                 else {
@@ -1727,6 +1693,109 @@ exports.orderPacked = (req, res, next) => {
         });
 };
 
+exports.orderConfirmed = (req, res, next) => {
+    const order_id = req.body.order_id;
+    if (!order_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Order.findByPk(order_id)
+        .then(order => {
+            if (!order) {
+                const error = new Error('Order not found');
+                error.statusCode = 404;
+                throw error;
+            }
+            if (order.vendor_id.toString() !== req.id.toString()) {
+                const error = new Error('Not Allowed');
+                error.statusCode = 403;
+                throw error;
+            }
+            if (order.cancelled) {
+                const error = new Error('This order has been cancelled');
+                error.statusCode = 406;
+                throw error;
+            }
+            if(order.status!=='Pending'){
+                const error = new Error('Order already confirmed');
+                error.statusCode = 406;
+                throw error;
+            }
+            order.status = 'Confirmed';
+            return order.save();
+        })
+        .then(order => {
+            res.status(200).json({ message: 'Order Successfully Confirmed' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
+exports.orderCancel = (req, res, next) => {
+    const order_id = req.body.order_id;
+    const cancellation_reason = req.body.cancellation_reason;
+    if (!order_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if (!cancellation_reason) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    Order.findByPk(order_id)
+        .then(order => {
+            if (!order) {
+                const error = new Error('Order not found');
+                error.statusCode = 404;
+                throw error;
+            }
+            if (order.vendor_id.toString() !== req.id.toString()) {
+                const error = new Error('Not Allowed');
+                error.statusCode = 403;
+                throw error;
+            }
+            if (order.cancelled) {
+                const error = new Error('This order has been cancelled already by Customer');
+                error.statusCode = 406;
+                throw error;
+            }
+            order.status = 'Cancelled';
+            order.cancelled = true;
+            order.cancellation_reason = cancellation_reason;
+            return order.save();
+        })
+        .then(order => {
+            res.status(200).json({ message: 'Order Successfully Cancelled' });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+};
+
 exports.getProductCategories = (req, res, next) => {
     const vendor_type = req.query.vendor_type;
     if (!vendor_type) {
@@ -1760,9 +1829,8 @@ exports.getProductCategories = (req, res, next) => {
 
 exports.getDashboard = (req, res, next) => {
     let ordersList;
-    Order.findAll({ where: { vendor_id: req.vendor.id, status: {[Sequelize.Op.ne] : 'delivered' }}, order: [['createdAt', 'DESC']], } )
+    Order.findAll({ where: { vendor_id: req.vendor.id, status: Sequelize.or({[Sequelize.Op.eq] : 'Pending' }, {[Sequelize.Op.eq] : 'Confirmed' }), }, order: [['createdAt', 'DESC']], } )
     .then(orders=>{
-        console.log(orders);
         res.status(200).json({message: 'Successfully fetched', data:{orders: orders, rating:{rating_stars:req.vendor.rating_stars, no_of_ratings: req.vendor.no_of_ratings, rating:req.vendor.rating}}});
     })
     .catch(err => {
@@ -1778,10 +1846,74 @@ exports.getDashboard = (req, res, next) => {
 exports.getOrderRevenueDashboard = (req, res, next) => {
     const duration = req.query.duration;
     let amount;
-    Order.sum('amount', {where: { vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'delivered' }}})
+    let start_date;
+    let end_date;
+    let where;
+    if(duration=='RevenueDuration.TODAY'){
+        end_date = new Date();
+        start_date = new Date();
+        start_date.setDate(start_date.getDate()-1);
+        start_date.setHours(start_date.getHours()+5);
+        start_date.setMinutes(start_date.getMinutes()+30);
+        start_date = start_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }, createdAt: { [Sequelize.Op.lt]: end_date, [Sequelize.Op.gt]: start_date}};
+    }else if(duration=='RevenueDuration.YESTERDAY'){
+        end_date = new Date();
+        end_date.setDate(end_date.getDate()-1);
+        end_date.setHours(end_date.getHours()+5);
+        end_date.setMinutes(end_date.getMinutes()+30);
+        end_date = end_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+        start_date = new Date();
+        start_date.setDate(start_date.getDate()-2);
+        start_date.setHours(start_date.getHours()+5);
+        start_date.setMinutes(start_date.getMinutes()+30);
+        start_date = start_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }, createdAt: { [Sequelize.Op.lt]: end_date, [Sequelize.Op.gt]: start_date}};
+    }else if(duration=='RevenueDuration.LAST7DAYS'){
+        end_date = new Date();
+        start_date = new Date();
+        start_date.setDate(start_date.getDate()-7);
+        start_date.setHours(start_date.getHours()+5);
+        start_date.setMinutes(start_date.getMinutes()+30);
+        start_date = start_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }, createdAt: { [Sequelize.Op.lt]: end_date, [Sequelize.Op.gt]: start_date}};
+    }else if(duration=='RevenueDuration.MONTH'){
+        end_date = new Date();
+        start_date = new Date()
+        start_date.setDate(1);
+        start_date.setDate(start_date.getDate()-1);
+        start_date.setHours(start_date.getHours()+5);
+        start_date.setMinutes(start_date.getMinutes()+30);
+        start_date = start_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }, createdAt: { [Sequelize.Op.lt]: end_date, [Sequelize.Op.gt]: start_date}};
+    }else if(duration=='RevenueDuration.LAST_MONTH'){
+        end_date = new Date()
+        end_date.setDate(1);
+        end_date.setDate(end_date.getDate()-1);
+        end_date.setHours(end_date.getHours()+5);
+        end_date.setMinutes(end_date.getMinutes()+30);
+        end_date = end_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        start_date = new Date()
+        start_date.setMonth(start_date.getMonth()-1);
+        start_date.setDate(1);
+        start_date.setDate(start_date.getDate()-1);
+        start_date.setHours(start_date.getHours()+5);
+        start_date.setMinutes(start_date.getMinutes()+30);
+        start_date = start_date.toISOString().split('T')[0]+'T18:30:00.000Z';
+
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }, createdAt: { [Sequelize.Op.lt]: end_date, [Sequelize.Op.gt]: start_date}};
+    }else{
+        where = {vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'Completed' }};
+    }
+    Order.sum('amount', {where: where})
     .then(sum=>{
         amount = sum;
-        return Order.count({where: { vendor_id: req.vendor.id, status: {[Sequelize.Op.eq] : 'delivered' }}});
+        return Order.count({where: where});
     })
     .then(count=>{
         res.status(200).json({message: 'Successfully fetched', data:{revenue: amount, order_count:count}});
@@ -1799,10 +1931,26 @@ exports.getOrderRevenueDashboard = (req, res, next) => {
 exports.getOrders = (req, res, next) => {
     const status = req.query.status;
     const offset = req.query.offset;
-    Order.findAll({ where: {vendor_id: req.vendor.id, status: status}, offset: offset, limit: 5 , order: [['createdAt', 'DESC']]} )
+    Order.findAndCountAll({ where: {vendor_id: req.vendor.id, status: status}, offset: offset, limit: 5 , order: [['createdAt', 'DESC']]} )
     .then(orders=>{
         console.log(orders);
         res.status(200).json({message: 'Successfully fetched', data:{orders: orders}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.getOrder = (req, res, next) => {
+    const order_id = req.query.order_id;
+    Order.findByPk(order_id)
+    .then(order=>{
+        res.status(200).json({message: 'Successfully fetched', data:{order: order}});
     })
     .catch(err => {
         if (!err.statusCode) {
@@ -1823,10 +1971,434 @@ exports.getReviews = (req, res, next) => {
     }else{
         ratingFilter = {[Sequelize.Op.ne] : null}
     }
-    Order.findAll({attributes:['id', 'amount', 'units', 'delivered_at', 'rating', 'review', 'products'], where: {vendor_id: req.vendor.id, rating: ratingFilter}, offset:offset, limit:10, order: [['delivered_at', 'DESC']]} )
+    Order.findAndCountAll({attributes:['id', 'amount', 'units', 'delivered_at', 'rating', 'review', 'products'], where: {vendor_id: req.vendor.id, rating: ratingFilter}, offset:offset, limit:10, order: [['delivered_at', 'DESC']]} )
     .then(reviews=>{
         console.log(reviews);
         res.status(200).json({message: 'Successfully fetched', data:{reviews: reviews}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.postComplaint = (req, res, next) => {
+    const contact_info = req.body.contact_info;
+    const reason = req.body.reason;
+    const complaint = req.body.complaint;
+    if(!contact_info){
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    req.vendor.createComplaint({complaint:complaint, reason:reason, contact_info:contact_info})
+    .then(complaint=>{
+        res.status(200).json({message: 'Your request has been submitted, We will contact you shortly, Thanks for your patience'})
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.putBanner = (req, res, next) => {
+    const image = req.file;
+    if (!image) {
+        const error = new Error('Check for the image file');
+        error.statusCode = 422;
+        throw error;
+    }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed.');
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
+    const image_url = image.path;
+    let banner_json = [];
+    if(!req.vendor.banners){
+        banner_json.push({"url": image_url});
+        req.vendor.banners = banner_json;
+        req.vendor.save()
+        .then(vendor=>{
+            res.status(201).json({message: 'Banner Uploaded', data: {banner_url: image_url}});
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                console.log(err);
+                err.statusCode = 500;
+                err.message = err.message;
+            }
+            next(err);
+        });
+    }else{
+        if (req.vendor.banners.length > 4) {
+            const error = new Error('Maximum no. of images reached');
+            error.statusCode = 406;
+            throw error;
+        }
+        for (let i = 0; i < req.vendor.banners.length; i++) {
+            banner_json.push({ "url": req.vendor.banners[i].url })
+        }
+        banner_json.push({ "url": image_url });
+        req.vendor.banners = banner_json;
+        req.vendor.save()
+        .then(vendor=>{
+            res.status(201).json({message: 'Banner Uploaded', data: {banner_url: image_url}});
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                console.log(err);
+                err.statusCode = 500;
+                err.message = err.message;
+            }
+            next(err);
+        });
+    }
+    
+};
+
+exports.deleteBanner = (req, res, next) => {
+    const banner_url = req.query.banner_url;
+    var banner_json = [];
+    var flag = false;
+    if(!req.vendor.banners){
+        const error = new Error('No Banners');
+        error.statusCode = 406;
+        throw error;
+    }
+    for (var i = 0; i < req.vendor.banners.length; i++) {
+        if (req.vendor.banners[i].url === banner_url) {
+            fileHelper.deleteFile(banner_url);
+            flag = true;
+        }
+        else {
+            banner_json.push({ "url": req.vendor.banners[i].url })
+        }
+    }
+    if (!flag) {
+        const error = new Error('No image found with this url');
+        error.statusCode = 404;
+        throw error;
+    }
+    req.vendor.banners = banner_json;
+    req.vendor.save()
+    .then(vendor=>{
+        res.status(200).json({message:'Banner has been deleted'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.putNotification = (req,res,next)=>{
+    const title = req.body.title;
+    const body = req.body.body;
+    const action = req.body.action;
+    req.vendor.createNotification({title:title, body:body, action:action})
+    .then(notification=>{
+        res.status(200).json({message:'Notificaton Created'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.getNotification = (req,res,next)=>{
+    Notification.findAll({where: {vendor_id: req.id}})
+    .then(notifications=>{
+        res.status(200).json({message: 'Notification Fetched', data: {notifications: notifications}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.deleteNotifications = (req,res,next) =>{
+    Notification.destroy({where: {vendor_id: req.id}})
+    .then(result=>{
+        res.status(200).json({message: 'Notification Deleted',});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.getHelpTabs = (req,res,next)=>{
+    const tabs = [
+        'Product Search',
+        'Fees and Proceeds',
+        'Inventory and Listings',
+        'Orders',
+        'Returns',
+        'Communications',
+        'Settings',
+        'Frequently Asked Questions',
+        'Terms and Conditions'
+      ];
+    res.status(200).json({tabs: tabs});
+};
+
+exports.getHelpContent = (req, res, next) =>{
+    const index = req.query.index;
+    if(!index){
+        const error = new Error('No Index Specified');
+        error.statusCode = 406;
+        throw error;
+    }
+    fs.readFile('help/help'+index+'.txt', 'utf8', (err, data)=>{
+        if(!err){
+            res.status(200).json({content: data});
+        }else{
+            if (!err.statusCode) {
+                console.log(err);
+                err.statusCode = 500;
+                err.message = err.message;
+            }
+            next(err);
+        }
+    })
+};
+
+exports.putCoupon = (req, res, next)=>{
+    const name = req.body.name;
+    const description = req.body.description;
+    const code = req.body.code;
+    const discount_percentage = req.body.discount_percentage;
+    const max_discount = req.body.max_discount;
+    const min_order = req.body.min_order;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const applicability = req.body.applicability;
+    const applicable_on = req.body.applicable_on;
+    if(!name){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!description){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!code){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!discount_percentage){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!max_discount){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!min_order){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!start_date){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!end_date){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!applicability){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    req.vendor.createCoupon({name: name, description: description, code: code, discount_percentage: discount_percentage, max_discount:max_discount, min_order:min_order,start_date:start_date, end_date:end_date,applicability:applicability,applicable_on:applicable_on})
+    .then(vendor=>{
+        res.status(200).json({message: 'Coupon created Successfully'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+
+};
+
+exports.patchCoupon = (req, res, next)=>{
+    const name = req.body.name;
+    const description = req.body.description;
+    const code = req.body.code;
+    const discount_percentage = req.body.discount_percentage;
+    const max_discount = req.body.max_discount;
+    const min_order = req.body.min_order;
+    const start_date = req.body.start_date;
+    const end_date = req.body.end_date;
+    const applicability = req.body.applicability;
+    const applicable_on = req.body.applicable_on;
+    const coupon_id = req.body.coupon_id;
+    if(!coupon_id){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!name){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!description){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!code){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!discount_percentage){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!max_discount){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!min_order){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!start_date){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!end_date){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    if(!applicability){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Coupon.findByPk(coupon_id)
+    .then(coupon=>{
+        coupon.name = name;
+        coupon.description = description;
+        coupon.code = code;
+        coupon.discount_percentage = discount_percentage;
+        coupon.max_discount = max_discount;
+        coupon.min_order = min_order;
+        coupon.start_date = start_date;
+        coupon.end_date = end_date;
+        coupon.applicability = applicability;
+        coupon.applicable_on = applicable_on;
+        return coupon.save();
+    })
+    .then(coupon=>{
+        res.status(200).json({message: 'Coupon updated successfully'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+}
+
+exports.deleteCoupon = (req, res, next) =>{
+    const coupon_id = req.query.coupon_id;
+    if(!coupon_id){
+        const error = new Error('Key Value error');
+        error.statusCode = 422;
+        throw error;
+    }
+    Coupon.findByPk(coupon_id)
+    .then(coupon=>{
+        coupon.deleted = true;
+        return coupon.save();
+    })
+    .then(result=>{
+        res.status(200).json({message: 'Coupon deleted successfully'});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.getCoupons = (req, res, next) =>{
+    Coupon.findAll({where: {vendor_id: req.id, deleted: false}})
+    .then(coupons=>{
+        res.status(200).json({message: 'Successfully Fetched', data: {coupons: coupons}});
+    })
+    .catch(err => {
+        if (!err.statusCode) {
+            console.log(err);
+            err.statusCode = 500;
+            err.message = err.message;
+        }
+        next(err);
+    });
+};
+
+exports.patchCouponIsLive = (req, res, next) =>{
+    const coupon_id = req.body.coupon_id;
+    const is_live = req.body.is_live;
+    Coupon.findByPk(coupon_id)
+    .then(coupon=>{
+        coupon.is_live = is_live;
+        return coupon.save();
+    })
+    .then(coupon=>{
+        res.status(200).json({message: 'Successfully Updated'});
     })
     .catch(err => {
         if (!err.statusCode) {

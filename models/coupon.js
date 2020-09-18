@@ -18,9 +18,8 @@ const Coupon = sequelize.define('coupon', {
     start_date: Sequelize.DATE,
     end_date: Sequelize.DATE,
     is_live: { type: Sequelize.BOOLEAN, defaultValue: true },
-    applicable_to_all: { type: Sequelize.BOOLEAN, defaultValue: true },
-    category_applicable: Sequelize.JSON,
-    product_applicable: Sequelize.JSON,
+    applicability: Sequelize.STRING,//all,category,product,first_time
+    applicable_on: Sequelize.JSON,
     deleted: {type: Sequelize.BOOLEAN, defaultValue: false}
 });
 

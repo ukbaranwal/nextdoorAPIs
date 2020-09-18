@@ -25,6 +25,8 @@ const Order = require('./models/order');
 const User = require('./models/user');
 const VendorType = require('./models/vendor_type');
 const Notification = require('./models/notification');
+const Complaint = require('./models/complaint');
+const Coupon = require('./models/coupon');
 
 ///Helper to delete files
 const fileHandler = require('./util/delete-file');
@@ -102,13 +104,17 @@ ProductCategory.belongsTo(VendorType, {foreignKey: 'vendor_type_id'});
 
 Vendor.hasMany(Notification, {foreignKey: 'vendor_id'});
 
+Vendor.hasMany(Complaint,{foreignKey: 'vendor_id'} );
+
+Vendor.hasMany(Coupon,{foreignKey: 'vendor_id'}  );
+
 sequelize.
 //this is to drop and recreate tables
   // sync({force: true})
   //this is to update some parts of tables
-  // sync({alter: true})
+  sync({alter: true})
   //for normal uses
-  sync()
+  // sync()
   .then(result => {
     console.log('Database Connected');
   }).catch(err => {

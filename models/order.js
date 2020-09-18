@@ -26,6 +26,7 @@ const Order = sequelize.define('order', {
   instructions: Sequelize.TEXT,
   status: {type: Sequelize.STRING, allowNull: false},//pending,accepted,shipped,delivered
   cancelled: {type: Sequelize.BOOLEAN, defaultValue: false},
+  cancellation_reason: Sequelize.TEXT,
   review: Sequelize.TEXT,
   rating: Sequelize.FLOAT,
   product_review: Sequelize.JSON,

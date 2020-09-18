@@ -8,7 +8,9 @@ const Complaint = sequelize.define('complaint', {
     allowNull: false,
     primaryKey: true
   },
-  complaint: Sequelize.STRING
+  complaint: Sequelize.TEXT,
+  contact_info: Sequelize.STRING,
+  reason: Sequelize.TEXT
 });
 
 module.exports = Complaint;

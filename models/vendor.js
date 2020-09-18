@@ -40,7 +40,8 @@ const Vendor = sequelize.define('vendor', {
   opening_time: Sequelize.STRING,
   closing_time: Sequelize.STRING,
   device_id: Sequelize.STRING,
-  firebase_token: Sequelize.STRING
+  firebase_token: Sequelize.STRING,
+  banners: Sequelize.JSON
 });
 
 module.exports = Vendor;

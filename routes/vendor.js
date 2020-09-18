@@ -17,6 +17,15 @@ const fileStorageProducts = multer.diskStorage({
   }
 })
 
+const fileStorageBanners = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join('images', 'banners'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+})
+
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype === 'image/png' ||
@@ -31,6 +40,10 @@ const fileFilter = (req, file, cb) => {
 
 
 const productUpload = multer({ storage: fileStorageProducts, fileFilter: fileFilter });
+
+const bannerUpload = multer({ storage: fileStorageBanners, fileFilter: fileFilter });
+
+router.put('/firebaseTokenUnregistered', vendorController.putFirebaseTokenUnregistered);
 
 router.post('/signup',
   [
@@ -53,7 +66,7 @@ router.post('/signup',
   ],
   vendorController.postSignup);
 
-router.delete('/vendor',vendorController.deleteVendor);
+router.delete('/vendor', vendorController.deleteVendor);
 
 router.post('/signin',
   [
@@ -103,9 +116,9 @@ router.patch('/shopLocation', isAuth, vendorController.patchUpdateLocation);
 
 router.get('/products', isAuth, isAllowed, vendorController.getProducts);
 
-router.put('/product',isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
+router.get('/productTemplates', isAuth, isAllowed, vendorController.getProductTemplates);
 
-router.put('/productThroughTemplate', isAuth, isAllowed, vendorController.putProductThroughTemplate);
+router.put('/product', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
 
 router.patch('/product', isAuth, isAllowed, vendorController.patchProduct);
 
@@ -117,9 +130,9 @@ router.put('/productImage', isAuth, isAllowed, productUpload.single('image'), ve
 
 router.delete('/productImage', isAuth, isAllowed, vendorController.deleteProductImage);
 
-router.put('/productColor',[body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.putProductColor);
+router.put('/productColor', [body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.putProductColor);
 
-router.patch('/productColor',[body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.patchProductColor);
+router.patch('/productColor', [body('hex_color').isHexColor()], isAuth, isAllowed, vendorController.patchProductColor);
 
 router.put('/productColorVariant', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProductColorVariant);
 
@@ -141,14 +154,46 @@ router.patch('/productSizeVariantInStock', isAuth, isAllowed, vendorController.p
 
 router.patch('/orderPacked', isAuth, vendorController.orderPacked);
 
+router.patch('/orderConfirm', isAuth, vendorController.orderConfirmed);
+
+router.patch('/orderCancel', isAuth, vendorController.orderCancel);
+
 router.get('/productCategory', vendorController.getProductCategories);
 
 router.get('/dashboard', isAuth, isAllowed, vendorController.getDashboard);
 
 router.get('/dashboardRevenue', isAuth, isAllowed, vendorController.getOrderRevenueDashboard);
 
+router.get('/order', isAuth, isAllowed, vendorController.getOrder);
+
 router.get('/orders', isAuth, isAllowed, vendorController.getOrders);
 
 router.get('/reviews', isAuth, isAllowed, vendorController.getReviews);
+
+router.post('/complaint', isAuth, isAllowed, vendorController.postComplaint);
+
+router.put('/banner', isAuth, isAllowed, bannerUpload.single('image'), vendorController.putBanner);
+
+router.delete('/banner', isAuth, isAllowed, vendorController.deleteBanner);
+
+router.put('/notification', isAuth, isAllowed, vendorController.putNotification);
+
+router.get('/notification', isAuth, isAllowed, vendorController.getNotification);
+
+router.delete('/notification', isAuth, isAllowed, vendorController.deleteNotifications);
+
+router.get('/helpTabs', vendorController.getHelpTabs);
+
+router.get('/helpContent', vendorController.getHelpContent);
+
+router.put('/coupon', isAuth, isAllowed, vendorController.putCoupon);
+
+router.patch('/coupon', isAuth, isAllowed, vendorController.patchCoupon);
+
+router.delete('/coupon', isAuth, isAllowed, vendorController.deleteCoupon);
+
+router.get('/coupon', isAuth, isAllowed, vendorController.getCoupons);
+
+router.patch('/couponStatus', isAuth, isAllowed, vendorController.patchCouponIsLive);
 
 module.exports = router;
