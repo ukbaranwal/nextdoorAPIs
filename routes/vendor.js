@@ -116,6 +116,8 @@ router.patch('/shopLocation', isAuth, vendorController.patchUpdateLocation);
 
 router.get('/products', isAuth, isAllowed, vendorController.getProducts);
 
+router.get('/couponProducts', isAuth, isAllowed, vendorController.getCouponProducts);
+
 router.get('/productTemplates', isAuth, isAllowed, vendorController.getProductTemplates);
 
 router.put('/product', isAuth, isAllowed, productUpload.array('images', 4), vendorController.putProduct);
@@ -195,5 +197,9 @@ router.delete('/coupon', isAuth, isAllowed, vendorController.deleteCoupon);
 router.get('/coupon', isAuth, isAllowed, vendorController.getCoupons);
 
 router.patch('/couponStatus', isAuth, isAllowed, vendorController.patchCouponIsLive);
+
+router.get('/colorVariants', vendorController.getColorVariants);
+
+router.get('/sizeVariants', vendorController.getSizeVariants);
 
 module.exports = router;

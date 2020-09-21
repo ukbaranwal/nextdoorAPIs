@@ -1,0 +1,34 @@
+[
+    {
+        "size_label":"XXS",
+        "size_value":"24"
+    }
+    ,{
+        "size_label":"XS",
+        "size_value":"26"
+    },
+    {
+        "size_label":"S",
+        "size_value":"28"
+    },
+    {
+        "size_label":"M",
+        "size_value":"30"
+    },
+    {
+        "size_label":"L",
+        "size_value":"32"
+    },
+    {
+        "size_label":"XL",
+        "size_value":"34"
+    }
+    ,{
+        "size_label":"XXL",
+        "size_value":"36"
+    }
+    ,{
+        "size_label":"XXXL",
+        "size_value":"38"
+    }
+]

@@ -486,6 +486,31 @@ exports.getProducts = (req, res, next) => {
         })
 };
 
+exports.getCouponProducts = (req, res, next) => {
+    const offset = req.query.offset;
+    const product_ids = JSON.parse(req.query.product_ids);
+    
+    let coupon_products;
+    Product.findAll({ where: {id:product_ids, vendor_id: req.id}, offset: offset, limit: 10 })
+        .then(products => {
+            if(products.length<10){
+                coupon_products = products;
+                return Product.findAll({where: {vendor_id: req.id}, limit: 10-products.length})
+            }
+            res.status(200).json({ message: 'Successfully Fetched', data: { products: products } });
+        })
+        .then(products=>{
+            coupon_products = [...coupon_products, ...products];
+            res.status(200).json({ message: 'Successfully Fetched', data: { products: coupon_products } });
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+};
+
 exports.getProductTemplates = (req, res, next) => {
     const offset = req.query.offset;
     const search = req.query.search;
@@ -1971,7 +1996,7 @@ exports.getReviews = (req, res, next) => {
     }else{
         ratingFilter = {[Sequelize.Op.ne] : null}
     }
-    Order.findAndCountAll({attributes:['id', 'amount', 'units', 'delivered_at', 'rating', 'review', 'products'], where: {vendor_id: req.vendor.id, rating: ratingFilter}, offset:offset, limit:10, order: [['delivered_at', 'DESC']]} )
+    Order.findAndCountAll({attributes:['id', 'amount', 'units', 'delivered_at', 'rating', 'review', 'products'], where: {vendor_id: req.vendor.id, rating: ratingFilter}, offset:offset, limit:5, order: [['delivered_at', 'DESC']]} )
     .then(reviews=>{
         console.log(reviews);
         res.status(200).json({message: 'Successfully fetched', data:{reviews: reviews}});
@@ -2179,11 +2204,6 @@ exports.getHelpContent = (req, res, next) =>{
         if(!err){
             res.status(200).json({content: data});
         }else{
-            if (!err.statusCode) {
-                console.log(err);
-                err.statusCode = 500;
-                err.message = err.message;
-            }
             next(err);
         }
     })
@@ -2408,4 +2428,14 @@ exports.patchCouponIsLive = (req, res, next) =>{
         }
         next(err);
     });
+};
+
+exports.getColorVariants = (req, res, next) =>{
+    const color_variants = require('../files/color_variants.json');
+    res.status(200).json({color_variants: color_variants})
+};
+
+exports.getSizeVariants = (req, res, next) =>{
+    const size_variants = require('../files/size_variants.json');
+    res.status(200).json({size_variants: size_variants})
 };

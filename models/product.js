@@ -26,7 +26,7 @@ const Product = sequelize.define('product', {
   details: Sequelize.JSON,
   is_primary: {type: Sequelize.BOOLEAN, defaultValue:true},
   size_variants: Sequelize.JSON,//{[{size: XL, mrp:999, discount_percentage:23}, {size: XL, mrp:999, discount_percentage:23}]}
-  color_variants: Sequelize.JSON,//{[{product_id:1, value: hexcode}, {product_id:2, value:hexcode}]}
+  color_variants: Sequelize.JSON,//{[{product_id:1, value: hexcode, name:red}, {product_id:2, value:hexcode, name:red}]}
   related_products: Sequelize.JSON//{[1,2,3,4]}
 });
 

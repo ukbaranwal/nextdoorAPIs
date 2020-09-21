@@ -1,0 +1,15 @@
+{
+    "to":"f5t47IbES42zcPWRBTaNp9:APA91bES7jZtKk5M0fINv7ihIuI7ilSlafidEbEPU4MdD5KGDKBi-xCIwjzReAmJXNqHE10YkGr-ij6kTAxMWMN2Iv3STlSWsTKKROPx1eaHk_kgIq3GAK_QZ_J3i0iwuLf6-yoAPUhI",
+    "notification": {
+          "title": "Great mobile deals",
+          "body": "Upto 50% offers on smart mobiles"
+      },
+      "data": {
+          "id":7,
+          "click_action": "FLUTTER_NOTIFICATION_CLICK",
+          "screen": "NEW_ORDER, ORDER, DUES"
+      },
+      "priority": "high",
+      "restricted_package_name": "co.nextdoor.nextdoorpartner"
+  }
+

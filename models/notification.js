@@ -10,7 +10,8 @@ const Notification = sequelize.define('notification', {
   },
   title: Sequelize.STRING,
   body: Sequelize.STRING,
-  action: Sequelize.STRING
+  action: Sequelize.STRING,
+  data: Sequelize.JSON
 });
 
 module.exports = Notification;
