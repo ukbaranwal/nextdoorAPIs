@@ -6,7 +6,7 @@
     "node": "12.18.3"
   },
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "aws-sdk": "^2.729.0",
