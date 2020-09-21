@@ -110,9 +110,9 @@ Vendor.hasMany(Coupon,{foreignKey: 'vendor_id'}  );
 
 sequelize.
 //this is to drop and recreate tables
-  // sync({force: true})
+  sync({force: true})
   //this is to update some parts of tables
-  sync({alter: true})
+  // sync({alter: true})
   //for normal uses
   // sync()
   .then(result => {
