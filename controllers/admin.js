@@ -842,6 +842,7 @@ exports.patchUpdateDashboard = (req, res, next) => {
     const address = req.body.address;
     const city = req.body.city;
     const tags = req.body.tags;
+    const vendor_type_id = req.body.vendor_type_id;
     if (!id) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -872,6 +873,11 @@ exports.patchUpdateDashboard = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
+    if (!vendor_type_id) {
+        const error = new Error('Key value error');
+        error.statusCode = 422;
+        throw error;
+    }
     Vendor.findOne({ where: { id: id } })
         .then(vendor => {
             vendor.name = name;
@@ -879,6 +885,7 @@ exports.patchUpdateDashboard = (req, res, next) => {
             vendor.address = address;
             vendor.city = city;
             vendor.tags = tags;
+            vendor.vendor_type_id = vendor_type_id;
             return vendor.save();
         })
         .then(vendor => {
