@@ -842,7 +842,7 @@ exports.patchUpdateDashboard = (req, res, next) => {
     const address = req.body.address;
     const city = req.body.city;
     const tags = req.body.tags;
-    const vendor_type_id = req.body.vendor_type_id;
+    const vendor_type = req.body.vendor_type;
     if (!id) {
         const error = new Error('Key value error');
         error.statusCode = 422;
@@ -873,7 +873,7 @@ exports.patchUpdateDashboard = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    if (!vendor_type_id) {
+    if (!vendor_type) {
         const error = new Error('Key value error');
         error.statusCode = 422;
         throw error;
@@ -885,7 +885,7 @@ exports.patchUpdateDashboard = (req, res, next) => {
             vendor.address = address;
             vendor.city = city;
             vendor.tags = tags;
-            vendor.vendor_type_id = vendor_type_id;
+            vendor.vendor_type = vendor_type;
             return vendor.save();
         })
         .then(vendor => {
