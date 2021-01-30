@@ -1,0 +1,15 @@
+allFollowers = jsonResponse['allFollowers'];
+allFollowing = jsonResponse['allFollowing'];
+lostFollowers = jsonResponse['lostFollowers'];
+newFollowers = jsonResponse['newFollowers'];
+followingThatDoesntFollowMeBack = jsonResponse['followingThatDoesNotFollowMeBack'];
+followingThatFollowsMeBack = jsonResponse['followingThatFollowsMeBack'];
+followersIFollowBack = jsonResponse['followersIFollowBack'];
+followersIDontFollowBack = jsonResponse['followersIDontFollowBack'];
+videoPostsCount = jsonResponse['videoPostCount'];
+photoPostsCount = jsonResponse['imagePostCount'];
+totalLikes = jsonResponse['totalLikes'];
+imageLikes = jsonResponse['imageLikes'];
+videoLikes = jsonResponse['videoLikes'];
+postImageUrl = jsonResponse['postImageUrl'];
+postVideoUrl = jsonResponse['postVideoUrl'];
